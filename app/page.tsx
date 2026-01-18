@@ -112,10 +112,10 @@ export default function Home() {
                             </div>
 
                             <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-tight">
-                                I catch <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">lost customers</span>
+                                We find <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">contractors</span> for you
                             </h1>
                             <p className="text-xl md:text-2xl text-gray-300 font-medium">
-                                Find a local pro in seconds
+                                Just input the information below
                             </p>
                         </div>
 
