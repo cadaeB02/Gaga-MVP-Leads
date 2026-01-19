@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-    title: "The Digital Mechanic - I catch lost customers",
-    description: "Find a local pro in seconds",
+    title: "GagaLeads - Find Local Contractors",
+    description: "Connect with licensed contractors in your area",
 };
 
 export default function RootLayout({
@@ -17,4 +17,3 @@ export default function RootLayout({
         </html>
     );
 }
-
