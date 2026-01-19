@@ -102,11 +102,8 @@ export default function Home() {
         <div className="min-h-screen relative flex flex-col bg-gradient-to-br from-sky-50 to-cyan-50">
             {/* Header */}
             <header className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-bold text-gray-900">GC Ventures</h1>
-                    <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg font-semibold transition-all">
-                        Get Free Quote
-                    </button>
                 </div>
             </header>
 
@@ -119,8 +116,8 @@ export default function Home() {
                             <button
                                 onClick={() => setMode('customer')}
                                 className={`px-8 py-3 rounded-full font-semibold transition-all ${mode === 'customer'
-                                        ? 'bg-cyan-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'bg-cyan-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 Find a Pro
@@ -128,8 +125,8 @@ export default function Home() {
                             <button
                                 onClick={() => setMode('contractor')}
                                 className={`px-8 py-3 rounded-full font-semibold transition-all ${mode === 'contractor'
-                                        ? 'bg-cyan-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'bg-cyan-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 I am a Pro
@@ -297,8 +294,13 @@ export default function Home() {
 
             {/* Footer */}
             <footer className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-t border-gray-200">
-                <div className="max-w-7xl mx-auto text-center text-gray-600 text-sm">
-                    <p>GC Ventures LLC | <a href="mailto:Garrett@GagaLeads.com" className="text-cyan-600 hover:text-cyan-700">Garrett@GagaLeads.com</a></p>
+                <div className="max-w-7xl mx-auto text-center text-gray-600 text-sm space-y-2">
+                    <p>© 2026 GC Ventures LLC</p>
+                    <p>
+                        <a href="mailto:Garrett@GagaLeads.com" className="text-cyan-600 hover:text-cyan-700">Garrett@GagaLeads.com</a>
+                        {' '} | {' '}
+                        <a href="/admin/leads" className="text-cyan-600 hover:text-cyan-700">Admin</a>
+                    </p>
                 </div>
             </footer>
         </div>
