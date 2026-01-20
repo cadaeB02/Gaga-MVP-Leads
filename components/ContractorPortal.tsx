@@ -16,7 +16,7 @@ export default function ContractorPortal() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    Back to Login
+                    Back
                 </button>
 
                 {/* Demo Dashboard */}
@@ -125,7 +125,7 @@ export default function ContractorPortal() {
                             onClick={() => setShowPreview(false)}
                             className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg"
                         >
-                            Join Waitlist to Get Started
+                            Join to Get Started
                         </button>
                     </div>
                 </div>
@@ -144,42 +144,11 @@ export default function ContractorPortal() {
                 </p>
             </div>
 
-            {/* Login Form Card */}
+            {/* CTA Card */}
             <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 max-w-md mx-auto">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Contractor Login</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Ready to Get Started?</h2>
 
-                {/* TODO: Implement auth after beta */}
-                <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                        <input
-                            type="email"
-                            placeholder="contractor@example.com"
-                            className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                            disabled
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                            disabled
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled
-                        className="w-full bg-gray-200 text-gray-400 py-5 text-lg font-bold rounded-xl cursor-not-allowed"
-                    >
-                        Login (Coming Soon)
-                    </button>
-                </form>
-
-                <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                <div className="space-y-3">
                     <a
                         href="/contractor/join"
                         className="block w-full bg-cyan-600 hover:bg-cyan-700 text-white py-5 text-lg font-bold rounded-xl transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-center"
@@ -192,9 +161,6 @@ export default function ContractorPortal() {
                     >
                         Preview Demo Dashboard
                     </button>
-                    <p className="text-center text-sm text-gray-500 mt-4">
-                        Be the first to know when we launch
-                    </p>
                 </div>
             </div>
 
