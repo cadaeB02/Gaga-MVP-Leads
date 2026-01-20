@@ -27,6 +27,7 @@ export default function Home() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({
@@ -98,12 +99,39 @@ export default function Home() {
         }
     };
 
+    const handleStripeCheckout = async () => {
+        setIsCheckoutLoading(true);
+        try {
+            const response = await fetch('/api/create-checkout', {
+                method: 'POST',
+            });
+            const { url, error } = await response.json();
+            if (error) {
+                alert('Error: ' + error);
+                return;
+            }
+            window.location.href = url;
+        } catch (err) {
+            console.error('Checkout error:', err);
+            alert('Failed to start checkout');
+        } finally {
+            setIsCheckoutLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen relative flex flex-col bg-gradient-to-br from-sky-50 to-cyan-50">
             {/* Header */}
             <header className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900">GC Ventures</h1>
+                    <button
+                        onClick={handleStripeCheckout}
+                        disabled={isCheckoutLoading}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md disabled:opacity-50 text-sm"
+                    >
+                        {isCheckoutLoading ? 'Loading...' : '💳 Test Stripe ($1)'}
+                    </button>
                 </div>
             </header>
 
