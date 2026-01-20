@@ -1,8 +1,0 @@
-import Stripe from 'stripe';
-
-if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is not set');
-}
-
-// Temporarily using 'latest' to bypass version error
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
