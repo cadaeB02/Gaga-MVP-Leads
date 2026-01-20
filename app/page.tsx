@@ -124,7 +124,7 @@ export default function Home() {
             {/* Header */}
             <header className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">GC Ventures</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
                     <button
                         onClick={handleStripeCheckout}
                         disabled={isCheckoutLoading}
@@ -323,7 +323,7 @@ export default function Home() {
             {/* Footer */}
             <footer className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-t border-gray-200">
                 <div className="max-w-7xl mx-auto text-center text-gray-600 text-sm space-y-2">
-                    <p>© 2026 GC Ventures LLC</p>
+                    <p>© 2026 LeadMan</p>
                     <p>
                         <a href="mailto:Garrett@GagaLeads.com" className="text-cyan-600 hover:text-cyan-700">Garrett@GagaLeads.com</a>
                         {' '} | {' '}

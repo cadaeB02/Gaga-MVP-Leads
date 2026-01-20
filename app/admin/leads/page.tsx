@@ -159,7 +159,7 @@ export default function AdminLeadsPage() {
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200 p-6">
                 <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">GC Ventures</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
                     <p className="text-sm text-gray-600 mt-1">Command Center</p>
                 </div>
 
@@ -206,7 +206,7 @@ export default function AdminLeadsPage() {
                 </nav>
 
                 <div className="pt-6 border-t border-gray-200">
-                    <p className="text-xs text-gray-500">GC Ventures LLC</p>
+                    <p className="text-xs text-gray-500">LeadMan</p>
                     <a href="mailto:Garrett@GagaLeads.com" className="text-xs text-cyan-600 hover:text-cyan-700">
                         Garrett@GagaLeads.com
                     </a>
@@ -218,7 +218,7 @@ export default function AdminLeadsPage() {
                 <div className="p-4 md:p-8">
                     {/* Mobile Header */}
                     <div className="md:hidden mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900">GC Ventures</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
                         <p className="text-sm text-gray-600">Command Center</p>
                     </div>
 
