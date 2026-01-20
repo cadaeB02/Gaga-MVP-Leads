@@ -346,8 +346,8 @@ export default function ContractorJoinPage() {
 
                         <p className="text-center text-sm text-gray-500">
                             Already have an account?{' '}
-                            <a href="/contractor/login" className="text-cyan-600 hover:text-cyan-700 font-semibold">
-                                Sign in
+                            <a href="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">
+                                Back to home
                             </a>
                         </p>
                     </form>
