@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 
 interface Contractor {
     id: number;
+    user_id: string;
     name: string;
     email: string;
     subscription_status: string;
