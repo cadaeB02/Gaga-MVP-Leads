@@ -180,9 +180,12 @@ export default function ContractorPortal() {
                 </form>
 
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                    <button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-5 text-lg font-bold rounded-xl transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98]">
-                        Join Waitlist
-                    </button>
+                    <a
+                        href="/contractor/join"
+                        className="block w-full bg-cyan-600 hover:bg-cyan-700 text-white py-5 text-lg font-bold rounded-xl transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-center"
+                    >
+                        Join as Contractor
+                    </a>
                     <button
                         onClick={() => setShowPreview(true)}
                         className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-semibold rounded-xl transition-all border border-gray-200 hover:border-cyan-400"

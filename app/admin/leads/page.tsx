@@ -15,6 +15,20 @@ interface Lead {
     created_at: string;
 }
 
+interface Contractor {
+    id: number;
+    user_id: string;
+    name: string;
+    email: string;
+    business_name: string;
+    license_number: string;
+    trade_type: string;
+    phone: string;
+    license_status: 'PENDING' | 'ACTIVE' | 'REJECTED';
+    insurance_verified: boolean;
+    created_at: string;
+}
+
 type View = 'leads' | 'contractors' | 'settings';
 
 export default function AdminLeadsPage() {
@@ -22,6 +36,7 @@ export default function AdminLeadsPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentView, setCurrentView] = useState<View>('leads');
     const [leads, setLeads] = useState<Lead[]>([]);
+    const [contractors, setContractors] = useState<Contractor[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -34,10 +49,17 @@ export default function AdminLeadsPage() {
             setIsAuthenticated(true);
             setError('');
             fetchLeads();
+            fetchContractors();
         } else {
             setError('Invalid access code');
         }
     };
+
+    useEffect(() => {
+        if (isAuthenticated && currentView === 'contractors') {
+            fetchContractors();
+        }
+    }, [currentView, isAuthenticated]);
 
     const fetchLeads = async () => {
         setIsLoading(true);
@@ -55,6 +77,21 @@ export default function AdminLeadsPage() {
             setError('Failed to load leads');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchContractors = async () => {
+        try {
+            const { data, error: supabaseError } = await supabase
+                .from('contractors')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (supabaseError) throw supabaseError;
+
+            setContractors(data || []);
+        } catch (err) {
+            console.error('Error fetching contractors:', err);
         }
     };
 
@@ -130,8 +167,8 @@ export default function AdminLeadsPage() {
                     <button
                         onClick={() => setCurrentView('leads')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${currentView === 'leads'
-                                ? 'bg-cyan-600 text-white shadow-md'
-                                : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-cyan-600 text-white shadow-md'
+                            : 'text-gray-700 hover:bg-gray-100'
                             }`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,8 +180,8 @@ export default function AdminLeadsPage() {
                     <button
                         onClick={() => setCurrentView('contractors')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${currentView === 'contractors'
-                                ? 'bg-cyan-600 text-white shadow-md'
-                                : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-cyan-600 text-white shadow-md'
+                            : 'text-gray-700 hover:bg-gray-100'
                             }`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,8 +193,8 @@ export default function AdminLeadsPage() {
                     <button
                         onClick={() => setCurrentView('settings')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${currentView === 'settings'
-                                ? 'bg-cyan-600 text-white shadow-md'
-                                : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-cyan-600 text-white shadow-md'
+                            : 'text-gray-700 hover:bg-gray-100'
                             }`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +419,12 @@ export default function AdminLeadsPage() {
                     )}
 
                     {/* Contractors View */}
-                    {currentView === 'contractors' && <ContractorsTable />}
+                    {currentView === 'contractors' && (
+                        <ContractorsTable
+                            contractors={contractors}
+                            onRefresh={fetchContractors}
+                        />
+                    )}
 
                     {/* Settings View */}
                     {currentView === 'settings' && <SettingsView />}

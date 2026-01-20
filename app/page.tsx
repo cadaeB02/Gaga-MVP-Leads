@@ -272,7 +272,7 @@ export default function Home() {
                                         We Got It!
                                     </h2>
                                     <p className="text-xl text-gray-600 leading-relaxed">
-                                        Garrett or Cade will call you shortly to discuss your project
+                                        We are finding a verified pro for you
                                     </p>
                                     <div className="pt-4">
                                         <div className="inline-flex items-center gap-2 text-cyan-600 font-semibold">
