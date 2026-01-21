@@ -1,7 +1,9 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import ContractorPortal from '@/components/ContractorPortal';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const SERVICE_TYPES = [
     { label: 'Remodel / Addition', value: 'General Building (B)' },
@@ -16,6 +18,7 @@ const SERVICE_TYPES = [
 
 export default function Home() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [mode, setMode] = useState<'customer' | 'contractor'>('customer');
     const [formData, setFormData] = useState({
         name: '',
@@ -29,6 +32,17 @@ export default function Home() {
     const [error, setError] = useState('');
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
     const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+
+    // Check if user is logged in and redirect to dashboard
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                router.push('/dashboard');
+            }
+        };
+        checkAuth();
+    }, [router]);
 
     useEffect(() => {
         const paymentStatus = searchParams?.get('payment');
@@ -138,7 +152,10 @@ export default function Home() {
             {/* Header */}
             <header className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v1.21</span>
+                    </div>
                     <button
                         onClick={handleStripeCheckout}
                         disabled={isCheckoutLoading}

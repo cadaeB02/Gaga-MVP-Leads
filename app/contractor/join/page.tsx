@@ -75,6 +75,19 @@ export default function ContractorJoinPage() {
         setIsSubmitting(true);
 
         try {
+            // Check if email already exists in contractors table
+            const { data: existingContractor, error: checkError } = await supabase
+                .from('contractors')
+                .select('email')
+                .eq('email', formData.email)
+                .single();
+
+            if (existingContractor) {
+                setError('Account already exists. Please log in instead.');
+                setIsSubmitting(false);
+                return;
+            }
+
             // 1. Create Auth user
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
@@ -322,6 +335,13 @@ export default function ContractorJoinPage() {
                         {error && (
                             <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-xl">
                                 {error}
+                                {error.includes('already exists') && (
+                                    <div className="mt-2">
+                                        <a href="/login" className="text-cyan-600 hover:text-cyan-700 font-semibold underline">
+                                            Click here to log in
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         )}
 
