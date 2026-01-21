@@ -102,8 +102,14 @@ export default function Home() {
     const handleStripeCheckout = async () => {
         setIsCheckoutLoading(true);
         try {
-            const response = await fetch('/api/create-checkout', {
+            const response = await fetch('/api/checkout_sessions', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: 'test-user-id', // Test user ID
+                }),
             });
             const { url, error } = await response.json();
             if (error) {
