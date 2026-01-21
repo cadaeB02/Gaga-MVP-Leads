@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import ContractorPortal from '@/components/ContractorPortal';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -16,7 +16,7 @@ const SERVICE_TYPES = [
     { label: 'Pool Maintenance', value: 'Pools (C-53)' },
 ];
 
-export default function Home() {
+function HomeContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [mode, setMode] = useState<'customer' | 'contractor'>('customer');
@@ -390,5 +390,13 @@ export default function Home() {
                 </div>
             </footer>
         </div>
+    );
+}
+
+export default function Home() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center"><div className="text-gray-600">Loading...</div></div>}>
+            <HomeContent />
+        </Suspense>
     );
 }
