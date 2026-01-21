@@ -23,18 +23,14 @@ export async function POST(req: NextRequest) {
         // Get the origin for redirect URLs
         const origin = req.headers.get('origin') || 'http://localhost:3000';
 
-        // Create Stripe checkout session
+        // Create Stripe checkout session without promo code
+        // (Promo code can be added manually in Stripe dashboard if needed)
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             line_items: [
                 {
                     price: 'price_1SrmpUECurkOxJwlXVyEFleL', // $60/month
                     quantity: 1,
-                },
-            ],
-            discounts: [
-                {
-                    promotion_code: 'promo_1Srms5ECurkOxJwlXH1kaWvN', // $1 first month
                 },
             ],
             success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
