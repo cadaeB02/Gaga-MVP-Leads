@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
                     promotion_code: 'promo_1Srms5ECurkOxJwlXH1kaWvN', // $1 first month
                 },
             ],
-            success_url: `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/pricing`,
+            success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/?payment=canceled`,
             metadata: {
                 supabase_user_id: userId,
             },

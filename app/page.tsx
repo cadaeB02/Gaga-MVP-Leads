@@ -1,8 +1,7 @@
-'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import ContractorPortal from '@/components/ContractorPortal';
+import { useSearchParams } from 'next/navigation';
 
 const SERVICE_TYPES = [
     { label: 'Remodel / Addition', value: 'General Building (B)' },
@@ -16,6 +15,7 @@ const SERVICE_TYPES = [
 ];
 
 export default function Home() {
+    const searchParams = useSearchParams();
     const [mode, setMode] = useState<'customer' | 'contractor'>('customer');
     const [formData, setFormData] = useState({
         name: '',
@@ -28,6 +28,14 @@ export default function Home() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+
+    useEffect(() => {
+        const paymentStatus = searchParams?.get('payment');
+        if (paymentStatus === 'success') {
+            setShowPaymentSuccess(true);
+        }
+    }, [searchParams]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({
@@ -140,6 +148,33 @@ export default function Home() {
                     </button>
                 </div>
             </header>
+
+            {/* Payment Success Banner */}
+            {showPaymentSuccess && (
+                <div className="relative z-10 bg-green-50 border-b-2 border-green-200 px-4 py-4">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-green-100 p-2 rounded-full">
+                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-green-900">Payment Successful!</h3>
+                                <p className="text-sm text-green-700">Your subscription is now active. You'll receive leads shortly!</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowPaymentSuccess(false)}
+                            className="text-green-600 hover:text-green-800"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
