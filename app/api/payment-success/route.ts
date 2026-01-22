@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    // Activate the contractor
+    // Activate the contractor's subscription
     const { error } = await supabase
         .from('contractors')
         .update({
-            license_status: 'ACTIVE',
-            insurance_verified: true
+            subscription_status: 'ACTIVE',
+            subscription_start_date: new Date().toISOString()
         })
         .eq('user_id', userId);
 

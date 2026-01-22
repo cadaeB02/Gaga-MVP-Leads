@@ -127,8 +127,8 @@ export default function ContractorJoinPage() {
                     license_number: formData.licenseNumber,
                     trade_type: 'General Building (B)', // Default, can be updated later
                     business_name: formData.name, // Using name as business name for now
-                    license_status: 'PENDING',
-                    insurance_verified: false
+                    license_status: 'ACTIVE',  // Auto-verified for MVP
+                    insurance_verified: true   // Auto-verified for MVP
                 });
 
             if (contractorError) throw contractorError;

@@ -88,7 +88,7 @@ export default function DashboardPage() {
         }
     };
 
-    const isSubscribed = contractor?.license_status === 'ACTIVE' && contractor?.insurance_verified;
+    const isSubscribed = contractor?.subscription_status === 'ACTIVE';
 
     if (isLoading) {
         return (
