@@ -88,7 +88,7 @@ export default function DashboardPage() {
         }
     };
 
-    const isSubscribed = contractor?.subscription_status === 'ACTIVE';
+    const isSubscribed = contractor?.subscription_status === 'active';
 
     if (isLoading) {
         return (
