@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Use service role for admin operations (bypasses RLS)
+const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
@@ -10,13 +16,13 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    // Activate the contractor's subscription
+    // Activate the contractor's subscription using admin client
     console.log('🔄 Activating subscription for user:', userId);
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('contractors')
         .update({
-            subscription_status: 'ACTIVE',
+            subscription_status: 'active',
             subscription_start_date: new Date().toISOString()
         })
         .eq('user_id', userId)
