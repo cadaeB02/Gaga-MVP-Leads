@@ -11,16 +11,21 @@ export async function GET(req: NextRequest) {
     }
 
     // Activate the contractor's subscription
-    const { error } = await supabase
+    console.log('🔄 Activating subscription for user:', userId);
+
+    const { data, error } = await supabase
         .from('contractors')
         .update({
             subscription_status: 'ACTIVE',
             subscription_start_date: new Date().toISOString()
         })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
 
     if (error) {
-        console.error('Error activating contractor:', error);
+        console.error('❌ Error activating contractor:', error);
+    } else {
+        console.log('✅ Contractor activated:', data);
     }
 
     // Redirect to dashboard
