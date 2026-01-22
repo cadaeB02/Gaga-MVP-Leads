@@ -4,9 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+interface Lead {
+    id: string;
+    name: string;
+    phone: string;
+    zip_code: string;
+    trade_type: string;
+    job_description: string;
+    created_at: string;
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
+    const [contractor, setContractor] = useState<any>(null);
+    const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
@@ -23,6 +35,24 @@ export default function DashboardPage() {
         }
 
         setUser(user);
+
+        // Get contractor info
+        const { data: contractorData } = await supabase
+            .from('contractors')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+        setContractor(contractorData);
+
+        // Get leads (show preview for all contractors)
+        const { data: leadsData } = await supabase
+            .from('leads')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        setLeads(leadsData || []);
         setIsLoading(false);
     };
 
@@ -49,7 +79,6 @@ export default function DashboardPage() {
                 return;
             }
 
-            // Redirect to Stripe Checkout
             window.location.href = url;
         } catch (err) {
             console.error('Checkout error:', err);
@@ -58,6 +87,8 @@ export default function DashboardPage() {
             setIsCheckoutLoading(false);
         }
     };
+
+    const isSubscribed = contractor?.license_status === 'ACTIVE' && contractor?.insurance_verified;
 
     if (isLoading) {
         return (
@@ -72,76 +103,126 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Contractor Dashboard</h1>
-                    <p className="text-gray-600 mt-1">Welcome back!</p>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">Contractor Dashboard</h1>
+                            <p className="text-gray-600 mt-1">Welcome back, {contractor?.name}!</p>
+                        </div>
+                        {!isSubscribed && (
+                            <div className="bg-amber-100 px-4 py-2 rounded-lg border border-amber-300">
+                                <p className="text-amber-800 font-semibold text-sm">Preview Mode</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Unlock Leads Card */}
-                <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 text-center">
-                    <div className="bg-cyan-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-10 h-10 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                {/* Unlock Banner (for unpaid contractors) */}
+                {!isSubscribed && (
+                    <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-6 shadow-lg mb-6 text-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold mb-2">🔓 Unlock Full Lead Access</h2>
+                                <p className="text-cyan-100">Get phone numbers and contact info for just <span className="font-bold">$1 for your first month</span></p>
+                            </div>
+                            <button
+                                onClick={handleUnlockLeads}
+                                disabled={isCheckoutLoading}
+                                className="bg-white text-cyan-600 px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg disabled:opacity-50"
+                            >
+                                {isCheckoutLoading ? 'Loading...' : 'Unlock Now'}
+                            </button>
+                        </div>
                     </div>
+                )}
 
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Unlock Exclusive Leads</h2>
-                    <p className="text-xl text-gray-600 mb-6">
-                        Get instant access to local leads for just <span className="font-bold text-cyan-600">$1 for your first month</span>, then $60/month
-                    </p>
-
-                    <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Unlimited Leads</p>
-                                    <p className="text-sm text-gray-600">Access all incoming leads</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Instant Notifications</p>
-                                    <p className="text-sm text-gray-600">Get alerted immediately</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <div>
-                                    <p className="font-semibold text-gray-900">Cancel Anytime</p>
-                                    <p className="text-sm text-gray-600">No long-term commitment</p>
-                                </div>
-                            </div>
+                {/* Leads Section */}
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            {isSubscribed ? 'Your Leads' : 'Available Leads Preview'}
+                        </h2>
+                        <div className="bg-cyan-100 px-4 py-2 rounded-lg">
+                            <p className="text-cyan-800 font-bold">{leads.length} Leads</p>
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleUnlockLeads}
-                        disabled={isCheckoutLoading}
-                        className="bg-cyan-600 hover:bg-cyan-700 text-white px-12 py-5 text-xl font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
-                    >
-                        {isCheckoutLoading ? (
-                            <span className="flex items-center gap-2 justify-center">
-                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    {leads.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                 </svg>
-                                Loading...
-                            </span>
-                        ) : (
-                            'Unlock Leads for $1'
-                        )}
-                    </button>
-                    <p className="text-sm text-gray-500 mt-4">Secure payment powered by Stripe</p>
+                            </div>
+                            <p className="text-gray-600 text-lg">No leads available yet</p>
+                            <p className="text-gray-500 text-sm mt-2">Check back soon for new opportunities!</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {leads.map((lead) => (
+                                <div key={lead.id} className="border border-gray-200 rounded-xl p-5 hover:border-cyan-400 transition-all relative">
+                                    {/* Blur overlay for unpaid contractors */}
+                                    {!isSubscribed && (
+                                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+                                            <div className="text-center">
+                                                <svg className="w-12 h-12 text-cyan-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                                <p className="text-gray-900 font-bold">Unlock to View Contact Info</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div>
+                                            <div className="inline-block bg-cyan-100 px-3 py-1 rounded-lg text-sm font-semibold text-cyan-700 mb-2">
+                                                {lead.trade_type}
+                                            </div>
+                                            <h3 className="text-lg font-bold text-gray-900">{lead.job_description}</h3>
+                                        </div>
+                                        <span className="text-xs text-gray-500">
+                                            {new Date(lead.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-gray-500">Customer</p>
+                                            <p className="font-semibold text-gray-900">
+                                                {isSubscribed ? lead.name : '████████'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Phone</p>
+                                            <p className="font-semibold text-gray-900">
+                                                {isSubscribed ? lead.phone : '(███) ███-████'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Location</p>
+                                            <p className="font-semibold text-gray-900">
+                                                {isSubscribed ? `Zip: ${lead.zip_code}` : 'Bay Area'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Status</p>
+                                            <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+                                                Available
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {isSubscribed && (
+                                        <button className="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-lg font-semibold transition-all">
+                                            Contact Customer
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
