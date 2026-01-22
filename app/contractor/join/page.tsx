@@ -19,6 +19,7 @@ export default function ContractorJoinPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -29,39 +30,39 @@ export default function ContractorJoinPage() {
     };
 
     const validateForm = () => {
+        const errors: Record<string, string> = {};
+
         if (!formData.name.trim()) {
-            setError('Please enter your name');
-            return false;
+            errors.name = 'Please enter your name';
         }
         if (!formData.email.trim()) {
-            setError('Please enter your email');
-            return false;
+            errors.email = 'Please enter your email';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            errors.email = 'Please enter a valid email address';
         }
         if (!formData.phone.trim()) {
-            setError('Please enter your phone number');
-            return false;
+            errors.phone = 'Please enter your phone number';
         }
         if (!formData.licenseNumber.trim()) {
-            setError('Please enter your license number');
-            return false;
+            errors.licenseNumber = 'Please enter your license number';
         }
         if (!formData.zipCode.trim()) {
-            setError('Please enter your zip code');
-            return false;
+            errors.zipCode = 'Please enter your zip code';
+        } else if (!/^\d{5}$/.test(formData.zipCode)) {
+            errors.zipCode = 'Please enter a valid 5-digit zip code';
         }
         if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters');
-            return false;
+            errors.password = 'Password must be at least 8 characters';
         }
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return false;
+            errors.confirmPassword = 'Passwords do not match';
         }
         if (!formData.insuranceCertified) {
-            setError('You must certify that your license is active and you carry General Liability Insurance');
-            return false;
+            errors.insuranceCertified = 'You must certify that your license is active and you carry General Liability Insurance';
         }
-        return true;
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -210,9 +211,13 @@ export default function ContractorJoinPage() {
                                 value={formData.name}
                                 onChange={handleChange}
                                 placeholder="John Smith"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.name ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.name && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.name}</p>
+                            )}
                         </div>
 
                         {/* Email */}
@@ -226,9 +231,13 @@ export default function ContractorJoinPage() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="john@example.com"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.email ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.email && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Phone */}
@@ -242,9 +251,13 @@ export default function ContractorJoinPage() {
                                 value={formData.phone}
                                 onChange={handleChange}
                                 placeholder="(555) 123-4567"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.phone ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.phone && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.phone}</p>
+                            )}
                         </div>
 
                         {/* License Number */}
@@ -258,9 +271,13 @@ export default function ContractorJoinPage() {
                                 value={formData.licenseNumber}
                                 onChange={handleChange}
                                 placeholder="C-10 #123456"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.licenseNumber ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.licenseNumber && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.licenseNumber}</p>
+                            )}
                         </div>
 
                         {/* Zip Code */}
@@ -274,9 +291,13 @@ export default function ContractorJoinPage() {
                                 value={formData.zipCode}
                                 onChange={handleChange}
                                 placeholder="94102"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.zipCode ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.zipCode && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.zipCode}</p>
+                            )}
                         </div>
 
                         {/* Password */}
@@ -290,9 +311,13 @@ export default function ContractorJoinPage() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Min. 8 characters"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.password ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.password && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.password}</p>
+                            )}
                         </div>
 
                         {/* Confirm Password */}
@@ -306,9 +331,13 @@ export default function ContractorJoinPage() {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 placeholder="Re-enter password"
-                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
                                 disabled={isSubmitting}
                             />
+                            {fieldErrors.confirmPassword && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.confirmPassword}</p>
+                            )}
                         </div>
 
                         {/* Insurance Certification - CRITICAL */}
