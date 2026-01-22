@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+
+export async function GET(req: NextRequest) {
+    const searchParams = req.nextUrl.searchParams;
+    const sessionId = searchParams.get('session_id');
+    const userId = searchParams.get('user_id');
+
+    if (!userId) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    // Activate the contractor
+    const { error } = await supabase
+        .from('contractors')
+        .update({
+            license_status: 'ACTIVE',
+            insurance_verified: true
+        })
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error activating contractor:', error);
+    }
+
+    // Redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard?payment=success', req.url));
+}

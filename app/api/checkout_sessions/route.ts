@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/?payment=canceled`,
+            success_url: `${origin}/api/payment-success?session_id={CHECKOUT_SESSION_ID}&user_id=${userId}`,
+            cancel_url: `${origin}/dashboard?payment=canceled`,
             metadata: {
                 supabase_user_id: userId,
             },
