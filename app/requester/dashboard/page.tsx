@@ -108,7 +108,7 @@ export default function RequesterDashboard() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">My Work Orders</h1>
                             <p className="text-gray-600 mt-1">Welcome back, {requester?.name}!</p>
@@ -122,6 +122,34 @@ export default function RequesterDashboard() {
                             </svg>
                             Logout
                         </button>
+                    </div>
+
+                    {/* Navigation Menu */}
+                    <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+                        <a
+                            href="/requester/dashboard"
+                            className="px-4 py-2 bg-cyan-600 text-white rounded-lg font-semibold shadow-sm"
+                        >
+                            Requester Dashboard
+                        </a>
+                        <a
+                            href="/dashboard"
+                            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg font-semibold transition-all"
+                        >
+                            Contractor Dashboard
+                        </a>
+                        <a
+                            href="/admin/leads"
+                            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg font-semibold transition-all"
+                        >
+                            Admin Panel
+                        </a>
+                        <a
+                            href="/"
+                            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg font-semibold transition-all"
+                        >
+                            Home
+                        </a>
                     </div>
                 </div>
 
@@ -147,7 +175,8 @@ export default function RequesterDashboard() {
                         {workOrders.map((order) => (
                             <div
                                 key={order.id}
-                                className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-cyan-400 transition-all shadow-sm hover:shadow-md"
+                                onClick={() => router.push(`/requester/lead/${order.id}`)}
+                                className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-cyan-400 transition-all shadow-sm hover:shadow-md cursor-pointer"
                             >
                                 <div className="mb-4">
                                     <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-xs font-semibold text-cyan-700 mb-3">
