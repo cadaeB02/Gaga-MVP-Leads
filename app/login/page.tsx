@@ -36,6 +36,27 @@ export default function LoginPage() {
         }
     };
 
+    const handleDevLogin = async () => {
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                email: 'testpro@example.com',
+                password: 'TestPassword123!'
+            });
+
+            if (signInError) throw signInError;
+
+            router.push('/dashboard');
+        } catch (err: any) {
+            setError(err.message || 'Dev login failed. Make sure test account exists.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
@@ -90,6 +111,23 @@ export default function LoginPage() {
                             {isLoading ? 'Logging in...' : 'Log In'}
                         </button>
                     </form>
+
+                    {/* Dev Quick Login */}
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                        <button
+                            onClick={handleDevLogin}
+                            disabled={isLoading}
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Dev: Quick Login
+                        </button>
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                            Instantly login as testpro@example.com
+                        </p>
+                    </div>
 
                     <div className="mt-6 text-center">
                         <p className="text-sm text-gray-600">
