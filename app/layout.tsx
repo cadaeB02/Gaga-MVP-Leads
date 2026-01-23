@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import Footer from '@/components/Footer';
 import "./globals.css";
 
 export default function RootLayout({
@@ -23,7 +24,10 @@ export default function RootLayout({
 
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body className="flex flex-col min-h-screen">
+                <main className="flex-grow">{children}</main>
+                <Footer />
+            </body>
         </html>
     );
 }

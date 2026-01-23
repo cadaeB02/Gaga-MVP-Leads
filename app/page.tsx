@@ -314,6 +314,23 @@ function HomeContent() {
                                                 </div>
                                             )}
 
+                                            {/* TCPA Consent */}
+                                            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                                <p className="text-xs text-gray-700 leading-relaxed">
+                                                    <strong className="text-gray-900">CONSENT TO CONTACT:</strong> By clicking "Get Your Free Quote" below, I expressly consent to receive marketing and informational communications from GC Ventures (The Digital Mechanic) and its network of partner contractors via telephone calls, text messages (SMS/MMS), and emails to the phone number and email address I have provided. I understand and agree that:
+                                                </p>
+                                                <ul className="text-xs text-gray-700 mt-2 ml-4 space-y-1">
+                                                    <li>• These communications may be made using an automatic telephone dialing system, artificial or prerecorded voice messages, and/or text messages</li>
+                                                    <li>• My consent applies even if the phone number I provide is currently listed on any state or federal Do Not Call registry</li>
+                                                    <li>• I am not required to provide this consent as a condition of purchasing any goods or services</li>
+                                                    <li>• I may revoke this consent at any time by replying "STOP" to any text message or contacting support</li>
+                                                    <li>• Message and data rates may apply; message frequency varies</li>
+                                                </ul>
+                                                <p className="text-xs text-gray-600 mt-2">
+                                                    For more information, see our <a href="/terms" className="text-cyan-600 hover:text-cyan-700 underline">Terms of Service</a> and <a href="/privacy" className="text-cyan-600 hover:text-cyan-700 underline">Privacy Policy</a>.
+                                                </p>
+                                            </div>
+
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
