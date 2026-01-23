@@ -205,7 +205,16 @@ export default function AdminLeadsPage() {
                     </button>
                 </nav>
 
-                <div className="pt-6 border-t border-gray-200">
+                <div className="pt-6 border-t border-gray-200 space-y-3">
+                    <a
+                        href="/"
+                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-cyan-600 transition-colors"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Home
+                    </a>
                     <p className="text-xs text-gray-500">LeadMan</p>
                     <a href="mailto:Garrett@GagaLeads.com" className="text-xs text-cyan-600 hover:text-cyan-700">
                         Garrett@GagaLeads.com
@@ -218,8 +227,21 @@ export default function AdminLeadsPage() {
                 <div className="p-4 md:p-8">
                     {/* Mobile Header */}
                     <div className="md:hidden mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
-                        <p className="text-sm text-gray-600">Command Center</p>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
+                                <p className="text-sm text-gray-600">Command Center</p>
+                            </div>
+                            <a
+                                href="/"
+                                className="flex items-center gap-1 text-sm text-cyan-600 hover:text-cyan-700 font-semibold"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Home
+                            </a>
+                        </div>
                     </div>
 
                     {/* Live Leads View */}
