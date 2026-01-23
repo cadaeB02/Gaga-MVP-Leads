@@ -1,0 +1,152 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+
+export default function RequesterLoginPage() {
+    const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (signInError) throw signInError;
+
+            // Verify user is a requester
+            const { data: requester, error: requesterError } = await supabase
+                .from('requesters')
+                .select('*')
+                .eq('user_id', data.user.id)
+                .single();
+
+            if (requesterError || !requester) {
+                await supabase.auth.signOut();
+                throw new Error('Account not found. Please contact support.');
+            }
+
+            router.push('/requester/dashboard');
+        } catch (err: any) {
+            setError(err.message || 'Failed to login');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDevLogin = async () => {
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                email: 'testrequester@test.com',
+                password: 'TestPassword123!'
+            });
+
+            if (signInError) throw signInError;
+
+            router.push('/requester/dashboard');
+        } catch (err: any) {
+            setError(err.message || 'Dev login failed. Make sure test account exists.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center px-4">
+            <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 w-full max-w-md">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Requester Portal</h1>
+                    <p className="text-gray-600">Access your work orders</p>
+                </div>
+
+                {/* Login Form */}
+                <form onSubmit={handleLogin} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-all"
+                            placeholder="your@email.com"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-all"
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+
+                {/* Dev Quick Login */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                    <button
+                        onClick={handleDevLogin}
+                        disabled={isLoading}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Dev: Quick Login
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                        Instantly login as testrequester@test.com
+                    </p>
+                </div>
+
+                {/* Back to Home */}
+                <div className="mt-6 text-center">
+                    <a href="/" className="text-sm text-cyan-600 hover:text-cyan-700 font-semibold">
+                        ← Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
+}
