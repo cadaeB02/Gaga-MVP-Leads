@@ -154,7 +154,7 @@ function HomeContent() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v1.29</span>
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.0</span>
                     </div>
                     <button
                         onClick={handleStripeCheckout}
@@ -233,6 +233,22 @@ function HomeContent() {
                                         <p className="text-xl text-gray-600">
                                             Just input the information below
                                         </p>
+                                    </div>
+
+                                    {/* Login Button */}
+                                    <div className="space-y-3">
+                                        <a
+                                            href="/requester/login"
+                                            className="block w-full bg-white hover:bg-gray-50 text-gray-700 py-4 rounded-2xl font-semibold transition-all shadow-md border-2 border-gray-200 text-center"
+                                        >
+                                            Already have an account? Log In
+                                        </a>
+                                        <a
+                                            href="/requester/dashboard"
+                                            className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-medium transition-all text-center text-sm"
+                                        >
+                                            Preview Demo Dashboard
+                                        </a>
                                     </div>
 
                                     {/* Form Card */}
