@@ -394,18 +394,6 @@ function HomeContent() {
                     {mode === 'contractor' && <ContractorPortal />}
                 </div>
             </main>
-
-            {/* Footer */}
-            <footer className="relative z-10 px-4 py-6 bg-white/80 backdrop-blur-sm border-t border-gray-200">
-                <div className="max-w-7xl mx-auto text-center text-gray-600 text-sm space-y-2">
-                    <p>© 2026 LeadMan</p>
-                    <p>
-                        <a href="mailto:Garrett@GagaLeads.com" className="text-cyan-600 hover:text-cyan-700">Garrett@GagaLeads.com</a>
-                        {' '} | {' '}
-                        <a href="/admin/leads" className="text-cyan-600 hover:text-cyan-700">Admin</a>
-                    </p>
-                </div>
-            </footer>
         </div>
     );
 }

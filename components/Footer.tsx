@@ -43,9 +43,18 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Copyright */}
-                <div className="border-t border-gray-700 pt-8 text-center text-sm">
-                    <p>&copy; {new Date().getFullYear()} GC Ventures / The Digital Mechanic. All rights reserved.</p>
+                {/* Copyright & Contact */}
+                <div className="border-t border-gray-700 pt-8 text-center space-y-2">
+                    <p className="text-sm">
+                        <a href="mailto:Garrett@GagaLeads.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                            Garrett@GagaLeads.com
+                        </a>
+                        {' '} | {' '}
+                        <Link href="/admin/leads" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                            Admin
+                        </Link>
+                    </p>
+                    <p className="text-sm">&copy; {new Date().getFullYear()} GC Ventures / The Digital Mechanic. All rights reserved.</p>
                 </div>
             </div>
         </footer>
