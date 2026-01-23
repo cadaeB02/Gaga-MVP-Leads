@@ -116,8 +116,8 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
             {/* Toast Notification */}
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-lg border-2 ${toast.type === 'success'
-                        ? 'bg-green-50 border-green-200 text-green-800'
-                        : 'bg-red-50 border-red-200 text-red-800'
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
                     }`}>
                     {toast.message}
                 </div>
@@ -213,93 +213,95 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
 
             {/* Desktop: Table View */}
             <div className="hidden md:block bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <table className="w-full">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Name
-                            </th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                License #
-                            </th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Trade Type
-                            </th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Applied
-                            </th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {contractors.map((contractor) => (
-                            <tr key={contractor.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div>
-                                        <p className="text-gray-900 font-semibold">{contractor.name}</p>
-                                        <p className="text-sm text-gray-600">{contractor.email}</p>
-                                        <a href={`tel:${contractor.phone}`} className="text-sm text-cyan-600 hover:text-cyan-700">
-                                            {contractor.phone}
-                                        </a>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="font-mono text-gray-900 font-semibold">{contractor.license_number}</span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                                    {contractor.trade_type}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(contractor.license_status)}`}>
-                                        {contractor.license_status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-700 text-sm">
-                                    {formatDate(contractor.created_at)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {contractor.license_status === 'PENDING' ? (
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleCheckLicense(contractor.license_number)}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1"
-                                                title="Check CA License Board"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                                Check
-                                            </button>
-                                            <button
-                                                onClick={() => handleVerify(contractor.id)}
-                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
-                                                title="Mark as Verified"
-                                            >
-                                                ✓ Verify
-                                            </button>
-                                            <button
-                                                onClick={() => handleReject(contractor.id)}
-                                                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
-                                                title="Reject Application"
-                                            >
-                                                ✗ Reject
-                                            </button>
-                                        </div>
-                                    ) : contractor.license_status === 'ACTIVE' ? (
-                                        <span className="text-green-600 font-semibold">✓ Verified</span>
-                                    ) : (
-                                        <span className="text-red-600 font-semibold">✗ Rejected</span>
-                                    )}
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Name
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    License #
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Trade Type
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Status
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Applied
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Actions
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {contractors.map((contractor) => (
+                                <tr key={contractor.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div>
+                                            <p className="text-gray-900 font-semibold">{contractor.name}</p>
+                                            <p className="text-sm text-gray-600">{contractor.email}</p>
+                                            <a href={`tel:${contractor.phone}`} className="text-sm text-cyan-600 hover:text-cyan-700">
+                                                {contractor.phone}
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className="font-mono text-gray-900 font-semibold">{contractor.license_number}</span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                                        {contractor.trade_type}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(contractor.license_status)}`}>
+                                            {contractor.license_status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-700 text-sm">
+                                        {formatDate(contractor.created_at)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {contractor.license_status === 'PENDING' ? (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleCheckLicense(contractor.license_number)}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1"
+                                                    title="Check CA License Board"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                    Check
+                                                </button>
+                                                <button
+                                                    onClick={() => handleVerify(contractor.id)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                                                    title="Mark as Verified"
+                                                >
+                                                    ✓ Verify
+                                                </button>
+                                                <button
+                                                    onClick={() => handleReject(contractor.id)}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                                                    title="Reject Application"
+                                                >
+                                                    ✗ Reject
+                                                </button>
+                                            </div>
+                                        ) : contractor.license_status === 'ACTIVE' ? (
+                                            <span className="text-green-600 font-semibold">✓ Verified</span>
+                                        ) : (
+                                            <span className="text-red-600 font-semibold">✗ Rejected</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
