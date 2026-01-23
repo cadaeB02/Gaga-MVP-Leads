@@ -130,19 +130,7 @@ export default function RequesterDashboard() {
                             href="/requester/dashboard"
                             className="px-4 py-2 bg-cyan-600 text-white rounded-lg font-semibold shadow-sm"
                         >
-                            Requester Dashboard
-                        </a>
-                        <a
-                            href="/dashboard"
-                            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg font-semibold transition-all"
-                        >
-                            Contractor Dashboard
-                        </a>
-                        <a
-                            href="/admin/leads"
-                            className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 rounded-lg font-semibold transition-all"
-                        >
-                            Admin Panel
+                            Dashboard
                         </a>
                         <a
                             href="/"
