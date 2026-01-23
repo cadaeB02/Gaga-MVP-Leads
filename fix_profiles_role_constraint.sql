@@ -10,7 +10,7 @@ DROP CONSTRAINT IF EXISTS profiles_role_check;
 -- Add new constraint that includes 'requester'
 ALTER TABLE public.profiles
 ADD CONSTRAINT profiles_role_check 
-CHECK (role IN ('contractor', 'admin', 'requester'));
+CHECK (role = ANY (ARRAY['contractor'::text, 'admin'::text, 'requester'::text]));
 
 -- Verify the constraint was updated
 SELECT conname, pg_get_constraintdef(oid) 
