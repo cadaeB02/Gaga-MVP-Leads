@@ -3,15 +3,15 @@
 -- Run this AFTER creating the requesters table
 -- =====================================================
 
--- STEP 1: Create the auth user in Supabase Dashboard first
+-- STEP 1: Auth user already created in Supabase Dashboard
 -- Email: testrequester@test.com
 -- Password: TestPassword123!
--- Then get the user_id and replace below
+-- User ID: c542ca8f-cacd-4ecb-89fd-8c5d0dd28c26
 
--- STEP 2: Insert requester profile
+-- STEP 2: Insert requester profile and link leads
 DO $$
 DECLARE
-    test_user_id UUID := 'YOUR-TEST-REQUESTER-USER-ID-HERE'; -- REPLACE THIS
+    test_user_id UUID := 'c542ca8f-cacd-4ecb-89fd-8c5d0dd28c26'; -- ✅ ACTUAL USER ID
     test_requester_id INTEGER;
 BEGIN
     -- Insert requester profile
