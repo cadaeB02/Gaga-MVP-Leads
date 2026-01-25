@@ -49,6 +49,17 @@ export default function Footer() {
                     <div className="max-w-3xl mx-auto space-y-3 text-sm">
                         <details className="bg-gray-800 rounded-lg p-4">
                             <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
+                                v2.6 - Password Visibility & Timestamp Improvements
+                            </summary>
+                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
+                                <li>• Added password visibility toggles (show/hide) to all password fields</li>
+                                <li>• Updated admin panel to show date + time (not just date)</li>
+                                <li>• Applied to contractor signup, contractor login, requester login</li>
+                            </ul>
+                        </details>
+
+                        <details className="bg-gray-800 rounded-lg p-4">
+                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
                                 v2.5 - Terms of Service Acceptance
                             </summary>
                             <ul className="mt-3 ml-4 space-y-1 text-gray-400">
