@@ -166,6 +166,7 @@ function HomeContent() {
             if (profileError) throw profileError;
 
             // 4. Create requester entry
+            console.log('Creating requester with user_id:', authData.user.id);
             const { data: requesterData, error: requesterError } = await supabase
                 .from('requesters')
                 .insert({
@@ -178,7 +179,11 @@ function HomeContent() {
                 .select()
                 .single();
 
-            if (requesterError) throw requesterError;
+            if (requesterError) {
+                console.error('Requester insert error:', requesterError);
+                console.error('Full error details:', JSON.stringify(requesterError, null, 2));
+                throw requesterError;
+            }
 
             // 5. Create lead linked to requester
             const { error: leadError } = await supabase
