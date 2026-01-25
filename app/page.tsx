@@ -152,6 +152,14 @@ function HomeContent() {
             if (authError) throw authError;
             if (!authData.user) throw new Error('User creation failed');
 
+            // IMPORTANT: Set the session so subsequent requests are authenticated
+            if (authData.session) {
+                await supabase.auth.setSession({
+                    access_token: authData.session.access_token,
+                    refresh_token: authData.session.refresh_token
+                });
+            }
+
             // 3. Create profile entry
             const { error: profileError } = await supabase
                 .from('profiles')
