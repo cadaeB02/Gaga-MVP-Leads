@@ -22,6 +22,7 @@ function HomeContent() {
     const [mode, setMode] = useState<'customer' | 'contractor'>('customer');
     const [formData, setFormData] = useState({
         name: '',
+        email: '',
         phone: '',
         zip_code: '',
         trade_type: '',
@@ -70,6 +71,14 @@ function HomeContent() {
         }
         if (!formData.name.trim()) {
             setError('Please enter your name');
+            return false;
+        }
+        if (!formData.email.trim()) {
+            setError('Please enter your email');
+            return false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            setError('Please enter a valid email address');
             return false;
         }
         if (!formData.phone.trim()) {
@@ -296,6 +305,19 @@ function HomeContent() {
                                                     name="name"
                                                     placeholder="John Smith"
                                                     value={formData.name}
+                                                    onChange={handleChange}
+                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    placeholder="john@example.com"
+                                                    value={formData.email}
                                                     onChange={handleChange}
                                                     className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
                                                     disabled={isSubmitting}
