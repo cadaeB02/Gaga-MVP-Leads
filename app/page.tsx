@@ -119,29 +119,90 @@ function HomeContent() {
         setIsSubmitting(true);
 
         try {
-            const { data, error: supabaseError } = await supabase
-                .from('leads')
-                .insert([
-                    {
-                        name: formData.name,
-                        phone: formData.phone,
-                        zip_code: formData.zip_code,
-                        trade_type: formData.trade_type,
-                        job_description: formData.job_description
-                    }
-                ])
-                .select();
+            // Phase 4: Full Account Creation Flow
 
-            if (supabaseError) {
-                console.error('Supabase error:', supabaseError);
-                throw supabaseError;
+            // 1. Check if email already exists
+            const { data: existingRequester } = await supabase
+                .from('requesters')
+                .select('email')
+                .eq('email', formData.email)
+                .single();
+
+            if (existingRequester) {
+                setError('An account with this email already exists. Please log in instead.');
+                setIsSubmitting(false);
+                return;
             }
 
-            console.log('Lead submitted successfully:', data);
+            // 2. Create Supabase Auth user
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        name: formData.name,
+                        phone: formData.phone,
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+            if (!authData.user) throw new Error('User creation failed');
+
+            // 3. Create profile entry
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: authData.user.id,
+                    role: 'requester',
+                    phone: formData.phone,
+                    zip_code: formData.zip_code,
+                    tos_accepted_at: new Date().toISOString()
+                });
+
+            if (profileError) throw profileError;
+
+            // 4. Create requester entry
+            const { data: requesterData, error: requesterError } = await supabase
+                .from('requesters')
+                .insert({
+                    user_id: authData.user.id,
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    tos_accepted_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (requesterError) throw requesterError;
+
+            // 5. Create lead linked to requester
+            const { error: leadError } = await supabase
+                .from('leads')
+                .insert({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    zip_code: formData.zip_code,
+                    trade_type: formData.trade_type,
+                    job_description: formData.job_description,
+                    requester_id: requesterData.id  // Link to requester!
+                });
+
+            if (leadError) throw leadError;
+
+            console.log('Account created successfully!', {
+                user: authData.user.id,
+                requester: requesterData.id
+            });
+
+            // 6. Success! User is already auto-logged in by signUp
             setIsSuccess(true);
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            setError('Failed to submit. Please try again.');
+
+        } catch (err: any) {
+            console.error('Error creating account:', err);
+            setError(err.message || 'Failed to create account. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
