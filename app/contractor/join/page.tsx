@@ -14,7 +14,8 @@ export default function ContractorJoinPage() {
         confirmPassword: '',
         licenseNumber: '',
         zipCode: '',
-        insuranceCertified: false
+        insuranceCertified: false,
+        tosAccepted: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -59,6 +60,9 @@ export default function ContractorJoinPage() {
         }
         if (!formData.insuranceCertified) {
             errors.insuranceCertified = 'You must certify that your license is active and you carry General Liability Insurance';
+        }
+        if (!formData.tosAccepted) {
+            errors.tosAccepted = 'You must accept the Terms of Service to continue';
         }
 
         setFieldErrors(errors);
@@ -111,7 +115,8 @@ export default function ContractorJoinPage() {
                     id: authData.user.id,
                     role: 'contractor',
                     phone: formData.phone,
-                    zip_code: formData.zipCode
+                    zip_code: formData.zipCode,
+                    tos_accepted_at: new Date().toISOString()
                 });
 
             if (profileError) throw profileError;
@@ -128,7 +133,8 @@ export default function ContractorJoinPage() {
                     trade_type: 'General Building (B)', // Default, can be updated later
                     business_name: formData.name, // Using name as business name for now
                     license_status: 'ACTIVE',  // Auto-verified for MVP
-                    insurance_verified: true   // Auto-verified for MVP
+                    insurance_verified: true,   // Auto-verified for MVP
+                    tos_accepted_at: new Date().toISOString()
                 });
 
             if (contractorError) throw contractorError;
@@ -358,6 +364,34 @@ export default function ContractorJoinPage() {
                             <p className="text-sm text-gray-600 mt-3 ml-9">
                                 This certification is legally required to receive leads through our platform.
                             </p>
+                        </div>
+
+                        {/* Terms of Service Acceptance - REQUIRED */}
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                            <label className="flex items-start gap-4 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    name="tosAccepted"
+                                    checked={formData.tosAccepted}
+                                    onChange={handleChange}
+                                    className="mt-1 w-5 h-5 text-cyan-600 border-2 border-gray-300 rounded focus:ring-cyan-500"
+                                    disabled={isSubmitting}
+                                />
+                                <span className="text-gray-900 font-semibold">
+                                    I have read and agree to the{' '}
+                                    <a
+                                        href="/terms"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-cyan-600 hover:text-cyan-700 underline"
+                                    >
+                                        Terms of Service
+                                    </a> *
+                                </span>
+                            </label>
+                            {fieldErrors.tosAccepted && (
+                                <p className="text-red-600 text-sm mt-2 ml-9">{fieldErrors.tosAccepted}</p>
+                            )}
                         </div>
 
                         {/* Error Message */}

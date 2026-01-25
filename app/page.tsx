@@ -154,7 +154,7 @@ function HomeContent() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.4</span>
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.5</span>
                     </div>
                     <button
                         onClick={handleStripeCheckout}

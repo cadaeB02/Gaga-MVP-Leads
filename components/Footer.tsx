@@ -49,6 +49,27 @@ export default function Footer() {
                     <div className="max-w-3xl mx-auto space-y-3 text-sm">
                         <details className="bg-gray-800 rounded-lg p-4">
                             <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
+                                v2.5 - Terms of Service Acceptance
+                            </summary>
+                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
+                                <li>• Added TOS acceptance checkbox to contractor signup</li>
+                                <li>• Database tracking of TOS acceptance timestamp</li>
+                                <li>• Required checkbox with link to Terms of Service</li>
+                            </ul>
+                        </details>
+
+                        <details className="bg-gray-800 rounded-lg p-4">
+                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
+                                v2.4 - Version History
+                            </summary>
+                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
+                                <li>• Added version history/changelog to footer</li>
+                                <li>• Expandable details for each version</li>
+                            </ul>
+                        </details>
+
+                        <details className="bg-gray-800 rounded-lg p-4">
+                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
                                 v2.3 - Dev Quick Login for Contractors
                             </summary>
                             <ul className="mt-3 ml-4 space-y-1 text-gray-400">
