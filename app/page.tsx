@@ -216,6 +216,9 @@ function HomeContent() {
             // 6. Success! User is already auto-logged in by signUp
             setIsSuccess(true);
 
+            // Scroll to top to show success message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } catch (err: any) {
             console.error('Error creating account:', err);
             setError(err.message || 'Failed to create account. Please try again.');
