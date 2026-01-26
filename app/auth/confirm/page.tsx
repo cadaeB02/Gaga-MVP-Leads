@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ConfirmEmailPage() {
+function ConfirmEmailContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -101,5 +101,20 @@ export default function ConfirmEmailPage() {
                 </button>
             </div>
         </div>
+    );
+}
+
+export default function ConfirmEmailPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center p-4">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-cyan-600 border-t-transparent"></div>
+                    <p className="text-gray-600 mt-4">Loading...</p>
+                </div>
+            </div>
+        }>
+            <ConfirmEmailContent />
+        </Suspense>
     );
 }
