@@ -58,6 +58,19 @@ export default function Footer() {
                             </ul>
                         </details>
 
+
+                        <details className="bg-gray-800 rounded-lg p-4">
+                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
+                                v2.8 - Requester Routing & New Work Order
+                            </summary>
+                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
+                                <li>• Fixed homepage routing to check user role</li>
+                                <li>• Added "New Work Order" button to requester dashboard</li>
+                                <li>• Pre-filled customer data in new work order form</li>
+                                <li>• Fixed scroll-to-top on success screens</li>
+                            </ul>
+                        </details>
+
                         <details className="bg-gray-800 rounded-lg p-4">
                             <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
                                 v2.5 - Terms of Service Acceptance
