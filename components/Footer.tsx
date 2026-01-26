@@ -61,6 +61,18 @@ export default function Footer() {
 
                         <details className="bg-gray-800 rounded-lg p-4">
                             <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
+                                v2.9 - Email Verification & Admin Approval
+                            </summary>
+                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
+                                <li>• Created email verification success page</li>
+                                <li>• Added admin approval requirement for contractors</li>
+                                <li>• Created "Pending Approval" page with clear status</li>
+                                <li>• Re-enabled RLS on requesters table</li>
+                            </ul>
+                        </details>
+
+                        <details className="bg-gray-800 rounded-lg p-4">
+                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
                                 v2.8 - Requester Routing & New Work Order
                             </summary>
                             <ul className="mt-3 ml-4 space-y-1 text-gray-400">
