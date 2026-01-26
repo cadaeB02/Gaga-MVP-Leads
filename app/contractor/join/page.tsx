@@ -142,6 +142,9 @@ export default function ContractorJoinPage() {
             if (contractorError) throw contractorError;
 
             setSuccess(true);
+
+            // Scroll to top to show success message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err: any) {
             console.error('Signup error:', err);
             setError(err.message || 'Failed to create account. Please try again.');

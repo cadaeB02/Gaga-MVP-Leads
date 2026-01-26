@@ -39,12 +39,23 @@ function HomeContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Check if user is logged in and redirect to dashboard
+    // Check if user is logged in and redirect to appropriate dashboard
     useEffect(() => {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                router.push('/dashboard');
+                // Check user role from profiles table
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.role === 'requester') {
+                    router.push('/requester/dashboard');
+                } else if (profile?.role === 'contractor') {
+                    router.push('/dashboard');
+                }
             }
         };
         checkAuth();
@@ -260,7 +271,7 @@ function HomeContent() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.7</span>
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.8</span>
                     </div>
                     <button
                         onClick={handleStripeCheckout}

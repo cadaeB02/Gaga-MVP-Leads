@@ -30,6 +30,15 @@ export default function RequesterDashboard() {
     const [requester, setRequester] = useState<Requester | null>(null);
     const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        phone: '',
+        email: '',
+        zip_code: '',
+        trade_type: '',
+        job_description: ''
+    });
 
     useEffect(() => {
         checkAuth();
@@ -60,6 +69,15 @@ export default function RequesterDashboard() {
 
             setRequester(requesterData);
 
+            // Pre-fill form data with requester info
+            setFormData({
+                phone: requesterData.phone || '',
+                email: requesterData.email || '',
+                zip_code: '', // Will be filled from previous order or left empty
+                trade_type: '',
+                job_description: ''
+            });
+
             // Get work orders for this requester
             const { data: ordersData, error: ordersError } = await supabase
                 .from('leads')
@@ -80,6 +98,63 @@ export default function RequesterDashboard() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push('/requester/login');
+    };
+
+    const handleOpenNewOrder = () => {
+        // Reset form with requester data
+        if (requester) {
+            setFormData({
+                phone: requester.phone || '',
+                email: requester.email || '',
+                zip_code: workOrders[0]?.zip_code || '', // Use last zip if available
+                trade_type: '',
+                job_description: ''
+            });
+        }
+        setShowNewOrderModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowNewOrderModal(false);
+    };
+
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmitNewOrder = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!requester) return;
+
+        setIsSubmitting(true);
+        try {
+            const { error } = await supabase
+                .from('leads')
+                .insert({
+                    name: requester.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    zip_code: formData.zip_code,
+                    trade_type: formData.trade_type,
+                    job_description: formData.job_description,
+                    requester_id: requester.id,
+                    status: 'OPEN'
+                });
+
+            if (error) throw error;
+
+            // Refresh work orders
+            await checkAuth();
+            setShowNewOrderModal(false);
+        } catch (err) {
+            console.error('Error creating work order:', err);
+            alert('Failed to create work order. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -138,6 +213,15 @@ export default function RequesterDashboard() {
                         >
                             Home
                         </a>
+                        <button
+                            onClick={handleOpenNewOrder}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all shadow-sm flex items-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            New Work Order
+                        </button>
                     </div>
                 </div>
 
@@ -199,6 +283,144 @@ export default function RequesterDashboard() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* New Work Order Modal */}
+                {showNewOrderModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900">New Work Order</h2>
+                                <button
+                                    onClick={handleCloseModal}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleSubmitNewOrder} className="space-y-6">
+                                {/* Name (Read-only) */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={requester?.name || ''}
+                                        disabled
+                                        className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-500 cursor-not-allowed"
+                                    />
+                                </div>
+
+                                {/* Phone */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleFormChange}
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleFormChange}
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Zip Code */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Zip Code
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="zip_code"
+                                        value={formData.zip_code}
+                                        onChange={handleFormChange}
+                                        required
+                                        pattern="[0-9]{5}"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Service Type */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Service Type
+                                    </label>
+                                    <select
+                                        name="trade_type"
+                                        value={formData.trade_type}
+                                        onChange={handleFormChange}
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    >
+                                        <option value="">Select a service...</option>
+                                        <option value="General Building (B)">Remodel / Addition</option>
+                                        <option value="Electrical (C-10)">Electrical Issue</option>
+                                        <option value="Plumbing (C-36)">Plumbing / Leak</option>
+                                        <option value="HVAC (C-20)">AC / Heating</option>
+                                        <option value="Painting (C-33)">Painting</option>
+                                        <option value="Roofing (C-39)">Roofing</option>
+                                        <option value="Landscaping (C-27)">Landscaping</option>
+                                        <option value="Pools (C-53)">Pool Maintenance</option>
+                                    </select>
+                                </div>
+
+                                {/* Job Description */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Job Description
+                                    </label>
+                                    <textarea
+                                        name="job_description"
+                                        value={formData.job_description}
+                                        onChange={handleFormChange}
+                                        required
+                                        rows={4}
+                                        placeholder="Describe the work you need done..."
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                                    />
+                                </div>
+
+                                {/* Buttons */}
+                                <div className="flex gap-4 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseModal}
+                                        className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSubmitting ? 'Submitting...' : 'Submit Work Order'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 )}
             </div>
