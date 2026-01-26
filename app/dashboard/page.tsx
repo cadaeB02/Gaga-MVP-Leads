@@ -48,6 +48,13 @@ export default function DashboardPage() {
 
         setContractor(contractorData);
 
+        // Check if contractor is approved by admin
+        if (contractorData && contractorData.verification_status !== 'verified') {
+            router.push('/contractor/pending');
+            return;
+        }
+
+
         // Get leads with requester info (show preview for all contractors)
         const { data: leadsData } = await supabase
             .from('leads')

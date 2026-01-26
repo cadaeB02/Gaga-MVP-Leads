@@ -31,6 +31,20 @@ export default function LoginPage() {
                 return;
             }
 
+            // Check if contractor is approved
+            if (data.user) {
+                const { data: contractorData } = await supabase
+                    .from('contractors')
+                    .select('verification_status')
+                    .eq('user_id', data.user.id)
+                    .single();
+
+                if (contractorData && contractorData.verification_status !== 'verified') {
+                    router.push('/contractor/pending');
+                    return;
+                }
+            }
+
             // Redirect to dashboard
             router.push('/dashboard');
         } catch (err: any) {
