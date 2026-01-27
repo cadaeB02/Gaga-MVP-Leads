@@ -53,22 +53,27 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
 
     const handleVerify = async (contractorId: number) => {
         try {
-            const { error } = await supabase
-                .from('contractors')
-                .update({
-                    license_status: 'ACTIVE',
-                    insurance_verified: true,
-                    verification_status: 'verified'  // This allows dashboard access
-                })
-                .eq('id', contractorId);
+            const response = await fetch('/api/admin/verify-contractor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contractorId,
+                    accessCode: 'gaga2026' // Admin access code
+                }),
+            });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to verify contractor');
+            }
 
             showToast('Contractor verified successfully!', 'success');
             onRefresh();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error verifying contractor:', err);
-            showToast('Failed to verify contractor', 'error');
+            showToast(err.message || 'Failed to verify contractor', 'error');
         }
     };
 
