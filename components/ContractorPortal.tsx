@@ -161,12 +161,6 @@ export default function ContractorPortal() {
                     >
                         Already have an account? Log In
                     </a>
-                    <button
-                        onClick={() => setShowPreview(true)}
-                        className="w-full bg-white hover:bg-gray-50 text-gray-600 py-3 text-sm font-medium rounded-xl transition-all border border-gray-200"
-                    >
-                        Preview Demo Dashboard
-                    </button>
                 </div>
             </div>
 

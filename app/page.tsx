@@ -298,12 +298,6 @@ function HomeContent() {
                                         >
                                             Already have an account? Log In
                                         </a>
-                                        <a
-                                            href="/requester/dashboard"
-                                            className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-medium transition-all text-center text-sm"
-                                        >
-                                            Preview Demo Dashboard
-                                        </a>
                                     </div>
 
                                     {/* Form Card */}
