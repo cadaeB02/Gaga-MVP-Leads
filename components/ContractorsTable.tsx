@@ -57,7 +57,8 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
                 .from('contractors')
                 .update({
                     license_status: 'ACTIVE',
-                    insurance_verified: true
+                    insurance_verified: true,
+                    verification_status: 'verified'  // This allows dashboard access
                 })
                 .eq('id', contractorId);
 
