@@ -34,8 +34,6 @@ function HomeContent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-    const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -61,12 +59,7 @@ function HomeContent() {
         checkAuth();
     }, [router]);
 
-    useEffect(() => {
-        const paymentStatus = searchParams?.get('payment');
-        if (paymentStatus === 'success') {
-            setShowPaymentSuccess(true);
-        }
-    }, [searchParams]);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -238,32 +231,6 @@ function HomeContent() {
         }
     };
 
-    const handleStripeCheckout = async () => {
-        setIsCheckoutLoading(true);
-        try {
-            const response = await fetch('/api/checkout_sessions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: 'test-user-id', // Test user ID
-                }),
-            });
-            const { url, error } = await response.json();
-            if (error) {
-                alert('Error: ' + error);
-                return;
-            }
-            window.location.href = url;
-        } catch (err) {
-            console.error('Checkout error:', err);
-            alert('Failed to start checkout');
-        } finally {
-            setIsCheckoutLoading(false);
-        }
-    };
-
     return (
         <div className="min-h-screen relative flex flex-col bg-gradient-to-br from-sky-50 to-cyan-50">
             {/* Header */}
@@ -271,44 +238,15 @@ function HomeContent() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.9</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded border border-orange-200">BETA</span>
+                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v3.0</span>
+                        </div>
                     </div>
-                    <button
-                        onClick={handleStripeCheckout}
-                        disabled={isCheckoutLoading}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md disabled:opacity-50 text-sm"
-                    >
-                        {isCheckoutLoading ? 'Loading...' : '💳 Test Stripe ($1)'}
-                    </button>
                 </div>
             </header>
 
-            {/* Payment Success Banner */}
-            {showPaymentSuccess && (
-                <div className="relative z-10 bg-green-50 border-b-2 border-green-200 px-4 py-4">
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-green-100 p-2 rounded-full">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-green-900">Payment Successful!</h3>
-                                <p className="text-sm text-green-700">Your subscription is now active. You'll receive leads shortly!</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setShowPaymentSuccess(false)}
-                            className="text-green-600 hover:text-green-800"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
+
 
             {/* Main Content */}
             <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
