@@ -120,7 +120,7 @@ export default function DashboardPage() {
     return (
         <>
             <Header />
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 p-4 md:p-8 pt-24">
+            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 p-4 md:p-8 pt-20">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-6">
