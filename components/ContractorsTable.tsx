@@ -14,6 +14,7 @@ interface Contractor {
     phone: string;
     license_status: 'PENDING' | 'ACTIVE' | 'REJECTED';
     insurance_verified: boolean;
+    verification_status?: string;
     created_at: string;
 }
 
