@@ -13,6 +13,7 @@ export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [darkMode, setDarkMode] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -109,7 +110,7 @@ export default function Header() {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                 {/* Logo/Brand */}
                 <div className="flex items-center gap-3">
                     <h1 className="text-xl font-bold text-gray-900">LeadMan</h1>
@@ -151,6 +152,43 @@ export default function Header() {
                                         </p>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Dark Mode Toggle */}
+                            <div className="px-3 py-2 border-b border-gray-200">
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all font-semibold group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            {darkMode ? (
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                                                />
+                                            ) : (
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                                                />
+                                            )}
+                                        </svg>
+                                        <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                                    </div>
+                                    <div className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-cyan-600' : 'bg-gray-300'} relative`}>
+                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-md transition-transform ${darkMode ? 'translate-x-7' : 'translate-x-1'}`}></div>
+                                    </div>
+                                </button>
                             </div>
 
                             {/* Sign Out Button */}

@@ -9,7 +9,7 @@ export default function PendingApprovalPage() {
     return (
         <>
             <Header />
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center p-4 pt-20">
+            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 flex items-center justify-center p-4 pt-24">
                 <div className="bg-white rounded-3xl p-8 md:p-12 max-w-2xl w-full shadow-xl border border-gray-200">
                     {/* Pending Icon */}
                     <div className="bg-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
