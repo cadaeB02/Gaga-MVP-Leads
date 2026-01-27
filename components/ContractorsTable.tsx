@@ -270,18 +270,20 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
                                         {formatDate(contractor.created_at)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        {contractor.license_status === 'PENDING' ? (
+                                        {contractor.verification_status !== 'verified' ? (
                                             <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleCheckLicense(contractor.license_number)}
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1"
-                                                    title="Check CA License Board"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                    </svg>
-                                                    Check
-                                                </button>
+                                                {contractor.license_status === 'PENDING' && (
+                                                    <button
+                                                        onClick={() => handleCheckLicense(contractor.license_number)}
+                                                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1"
+                                                        title="Check CA License Board"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                        Check
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => handleVerify(contractor.id)}
                                                     className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
@@ -297,10 +299,8 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
                                                     ✗ Reject
                                                 </button>
                                             </div>
-                                        ) : contractor.license_status === 'ACTIVE' ? (
-                                            <span className="text-green-600 font-semibold">✓ Verified</span>
                                         ) : (
-                                            <span className="text-red-600 font-semibold">✗ Rejected</span>
+                                            <span className="text-green-600 font-semibold">✓ Verified</span>
                                         )}
                                     </td>
                                 </tr>
