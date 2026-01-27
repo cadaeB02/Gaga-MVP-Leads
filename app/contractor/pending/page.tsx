@@ -57,6 +57,47 @@ export default function PendingApprovalPage() {
                         </div>
                     </div>
 
+                    {/* How It Works - Business Model */}
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 mb-8 border border-cyan-200">
+                        <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            How LeadMan Works
+                        </h2>
+                        <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                            We're the bridge between homeowners who need work done and quality contractors like you. Here's how we make it happen:
+                        </p>
+                        <div className="space-y-3 text-sm">
+                            <div className="flex items-start gap-3 bg-white rounded-lg p-3">
+                                <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0 font-bold text-cyan-600">1</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">Homeowners Request Services</p>
+                                    <p className="text-gray-600">Customers submit their project details and we verify their information</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 bg-white rounded-lg p-3">
+                                <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0 font-bold text-cyan-600">2</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">We Match You With Qualified Leads</p>
+                                    <p className="text-gray-600">Only verified contractors in the right trade and area get exclusive access</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3 bg-white rounded-lg p-3">
+                                <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0 font-bold text-cyan-600">3</div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">You Close The Deal</p>
+                                    <p className="text-gray-600">Contact the customer directly, quote the job, and grow your business</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-4 p-3 bg-white rounded-lg border-l-4 border-cyan-500">
+                            <p className="text-sm text-gray-700">
+                                <span className="font-semibold text-cyan-600">Our Mission:</span> We believe quality contractors shouldn't waste time chasing bad leads. We do the heavy lifting so you can focus on what you do best—delivering exceptional work.
+                            </p>
+                        </div>
+                    </div>
+
                     {/* What's Next */}
                     <div className="bg-gray-50 rounded-xl p-6 mb-8">
                         <h2 className="font-bold text-gray-900 mb-3">What happens next:</h2>
