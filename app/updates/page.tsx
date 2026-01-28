@@ -12,6 +12,17 @@ interface UpdateItem {
 
 const updates: UpdateItem[] = [
     {
+        version: 'v3.2',
+        title: 'Lead Control & Manual Assignment',
+        date: 'January 28, 2026',
+        changes: [
+            'Added "Lead Control" dashboard for manual project-to-contractor matching',
+            'Implemented UUID-based lead assignment for precise distribution',
+            'Updated lead status management to include transparent "ASSIGNED" state',
+            'Enhanced Admin Sidebar with new "Control" navigation section'
+        ]
+    },
+    {
         version: 'v3.1',
         title: 'Admin Detail Views & Lead Verification',
         date: 'January 27, 2026',

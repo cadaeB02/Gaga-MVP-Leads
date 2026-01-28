@@ -56,7 +56,7 @@ export default function Footer() {
                         </Link>
                         {' '} | {' '}
                         <Link href="/updates" className="text-gray-500 hover:text-cyan-400 transition-colors">
-                            v3.1
+                            v3.2
                         </Link>
                     </p>
                     <p className="text-sm">&copy; {new Date().getFullYear()} GC Ventures / The Digital Mechanic. All rights reserved.</p>

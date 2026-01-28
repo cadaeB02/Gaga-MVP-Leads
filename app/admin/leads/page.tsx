@@ -6,6 +6,7 @@ import ContractorsTable from '@/components/ContractorsTable';
 import SettingsView from '@/components/SettingsView';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import ContractorDetailModal from '@/components/ContractorDetailModal';
+import LeadControlView from '@/components/LeadControlView';
 
 interface Lead {
     id: string;
@@ -36,7 +37,7 @@ interface Contractor {
     created_at: string;
 }
 
-type View = 'leads' | 'contractors' | 'settings';
+type View = 'leads' | 'contractors' | 'lead-control' | 'settings';
 
 export default function AdminLeadsPage() {
     const [accessCode, setAccessCode] = useState('');
@@ -202,6 +203,19 @@ export default function AdminLeadsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span className="font-semibold">Contractors</span>
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentView('lead-control')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${currentView === 'lead-control'
+                            ? 'bg-cyan-600 text-white shadow-md'
+                            : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        <span className="font-semibold">Lead Control</span>
                     </button>
 
                     <button
@@ -389,6 +403,9 @@ export default function AdminLeadsPage() {
                         </div>
                     )}
 
+                    {/* Lead Control View */}
+                    {currentView === 'lead-control' && <LeadControlView />}
+
                     {/* Contractors View */}
                     {currentView === 'contractors' && (
                         <div>
@@ -450,6 +467,17 @@ export default function AdminLeadsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span className="text-xs font-semibold">Contractors</span>
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentView('lead-control')}
+                        className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${currentView === 'lead-control' ? 'text-cyan-600' : 'text-gray-500'
+                            }`}
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        <span className="text-xs font-semibold">Control</span>
                     </button>
 
                     <button
