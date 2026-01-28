@@ -20,6 +20,8 @@ interface Lead {
     requesters?: {
         is_verified: boolean;
     };
+    status?: string;
+    visible_to_user_id?: string;
 }
 
 interface Contractor {
@@ -72,7 +74,14 @@ export default function AdminLeadsPage() {
     };
 
     useEffect(() => {
-        if (isAuthenticated && currentView === 'contractors') {
+        if (isAuthenticated) {
+            fetchLeads();
+            fetchContractors();
+        }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated && (currentView === 'contractors' || currentView === 'leads')) {
             fetchContractors();
         }
     }, [currentView, isAuthenticated]);
@@ -363,77 +372,114 @@ export default function AdminLeadsPage() {
 
                             {!isLoading && leads.length > 0 && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {leads.map((lead) => (
-                                        <div
-                                            key={lead.id}
-                                            className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-cyan-400 transition-all shadow-sm hover:shadow-md cursor-pointer"
-                                            onClick={() => setSelectedLead(lead)}
-                                        >
-                                            <div className="mb-4">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-xs font-semibold text-cyan-700">
-                                                        {lead.trade_type || 'General'}
+                                    {leads.map((lead) => {
+                                        const isAssigned = lead.status === 'ASSIGNED';
+                                        const isExpired = isAssigned && lead.created_at && (new Date().getTime() - new Date(lead.created_at).getTime() > 48 * 60 * 60 * 1000);
+                                        const isConfirmed = lead.status === 'MATCHED';
+
+                                        // Find contractor if assigned
+                                        const assignedContractor = isAssigned ? contractors.find(c => c.user_id === lead.visible_to_user_id) : null;
+
+                                        return (
+                                            <div
+                                                key={lead.id}
+                                                className={`bg-white rounded-2xl p-6 border-2 transition-all shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden ${isExpired ? 'border-red-500 shadow-red-50/50' :
+                                                    isConfirmed ? 'border-green-500 shadow-green-50/50' :
+                                                        isAssigned ? 'border-amber-400 shadow-amber-50/50' :
+                                                            'border-gray-200'
+                                                    }`}
+                                                onClick={() => setSelectedLead(lead)}
+                                            >
+                                                {/* Status Ribbon */}
+                                                {(isAssigned || isExpired || isConfirmed) && (
+                                                    <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase text-white rounded-bl-lg ${isExpired ? 'bg-red-500' : isConfirmed ? 'bg-green-500' : 'bg-amber-400'
+                                                        }`}>
+                                                        {isExpired ? 'Expired' : isConfirmed ? 'Confirmed' : 'Assigned'}
                                                     </div>
-                                                    {lead.requesters?.is_verified === false && (
-                                                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-semibold">
-                                                            ⚠️ Unverified Lead
-                                                        </span>
+                                                )}
+
+                                                <div className="mb-4">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-xs font-semibold text-cyan-700">
+                                                            {lead.trade_type || 'General'}
+                                                        </div>
+                                                        {lead.requesters?.is_verified === false && !isAssigned && !isExpired && !isConfirmed && (
+                                                            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-semibold">
+                                                                ⚠️ Unverified Lead
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                                        {truncateText(lead.job_description, 50)}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        {formatDate(lead.created_at)}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3 mb-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-cyan-100 p-2 rounded-lg">
+                                                            <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Customer</p>
+                                                            <p className="text-gray-900 font-semibold">{lead.name}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-cyan-100 p-2 rounded-lg">
+                                                            <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Location</p>
+                                                            <p className="text-gray-900 font-semibold">{lead.zip_code}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {assignedContractor && (
+                                                        <div className="pt-3 border-t border-gray-100 mt-2">
+                                                            <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Assigned To</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                                                    <svg className="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <p className="text-sm font-bold text-gray-700">
+                                                                    {assignedContractor.business_name || assignedContractor.name}
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
-                                                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                                    {truncateText(lead.job_description, 50)}
-                                                </h3>
-                                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                                                <div className="text-center text-sm text-gray-500 mb-4">
+                                                    Click to view full details
+                                                </div>
+
+                                                <a
+                                                    href={`tel:${lead.phone}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-center transition-all shadow-md flex items-center justify-center gap-2"
+                                                >
+                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                                     </svg>
-                                                    {formatDate(lead.created_at)}
-                                                </div>
+                                                    Call {lead.phone}
+                                                </a>
                                             </div>
-
-                                            <div className="space-y-3 mb-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-cyan-100 p-2 rounded-lg">
-                                                        <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Customer</p>
-                                                        <p className="text-gray-900 font-semibold">{lead.name}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-cyan-100 p-2 rounded-lg">
-                                                        <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Location</p>
-                                                        <p className="text-gray-900 font-semibold">{lead.zip_code}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="text-center text-sm text-gray-500 mb-4">
-                                                Click to view full details
-                                            </div>
-
-                                            <a
-                                                href={`tel:${lead.phone}`}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-center transition-all shadow-md flex items-center justify-center gap-2"
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                                                </svg>
-                                                Call {lead.phone}
-                                            </a>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
 

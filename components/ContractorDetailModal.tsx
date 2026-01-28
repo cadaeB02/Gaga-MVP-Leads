@@ -43,15 +43,26 @@ export default function ContractorDetailModal({ contractor, onClose, onVerify, o
 
     const fetchContractorLeads = async () => {
         try {
-            const { data } = await supabase
-                .from('work_orders')
+            // Fetch leads from the leads table where visible_to_user_id matches this contractor
+            const { data: leadsData } = await supabase
+                .from('leads')
                 .select('*')
-                .eq('contractor_id', contractor.id)
+                .eq('visible_to_user_id', contractor.user_id)
                 .order('created_at', { ascending: false });
 
-            if (data) {
-                setAssignedLeads(data);
-            }
+            // Also fetch from work_orders (legacy support)
+            const { data: woData } = await supabase
+                .from('work_orders')
+                .select('*')
+                .eq('contractor_id', contractor.id);
+
+            // Merge and de-duplicate if necessary (using ID)
+            const combined = [
+                ...(leadsData || []),
+                ...(woData || []).filter(wo => !leadsData?.some(l => l.id === wo.id))
+            ];
+
+            setAssignedLeads(combined);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching contractor leads:', error);

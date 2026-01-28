@@ -56,6 +56,15 @@ export default function LeadControlView() {
         setSuccess('');
 
         try {
+            // First, get the contractor's name for a better success message
+            const { data: contractorData } = await supabase
+                .from('contractors')
+                .select('name, business_name')
+                .eq('user_id', uuid.trim())
+                .single();
+
+            const displayName = contractorData?.business_name || contractorData?.name || uuid.trim();
+
             const { error: updateError } = await supabase
                 .from('leads')
                 .update({
@@ -66,7 +75,7 @@ export default function LeadControlView() {
 
             if (updateError) throw updateError;
 
-            setSuccess(`Lead successfully assigned to ${uuid}`);
+            setSuccess(`Lead successfully assigned to ${displayName}`);
             // Refresh list
             fetchUnassignedLeads();
         } catch (err: any) {
@@ -151,8 +160,8 @@ export default function LeadControlView() {
                                         onClick={() => handleAssign(lead.id)}
                                         disabled={assigningId === lead.id}
                                         className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-md flex items-center justify-center gap-2 ${assigningId === lead.id
-                                                ? 'bg-gray-400 cursor-not-allowed'
-                                                : 'bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98]'
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98]'
                                             }`}
                                     >
                                         {assigningId === lead.id ? (
