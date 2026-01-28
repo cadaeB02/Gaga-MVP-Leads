@@ -12,6 +12,17 @@ interface UpdateItem {
 
 const updates: UpdateItem[] = [
     {
+        version: 'v3.3',
+        title: 'Contractor ID Visibility & Quick Copy',
+        date: 'January 28, 2026',
+        changes: [
+            'Added Contractor UUID display to the verification queue',
+            'Implemented one-click copy button for Contractor IDs',
+            'Streamlined the manual lead assignment workflow',
+            'Improved mobile card view with compact project IDs'
+        ]
+    },
+    {
         version: 'v3.2',
         title: 'Lead Control & Manual Assignment',
         date: 'January 28, 2026',

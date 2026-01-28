@@ -162,6 +162,25 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">{contractor.name}</h3>
                                 <p className="text-sm text-gray-600">{contractor.email}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <code className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">
+                                        ID: {contractor.user_id.substring(0, 8)}...
+                                    </code>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            copyToClipboard(contractor.user_id).then(success => {
+                                                if (success) showToast('Contractor ID copied!', 'success');
+                                            });
+                                        }}
+                                        className="text-cyan-600 hover:text-cyan-700 p-1"
+                                        title="Copy Full UUID"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(contractor.license_status)}`}>
                                 {contractor.license_status}
@@ -257,6 +276,25 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                                         <div>
                                             <p className="text-gray-900 font-semibold">{contractor.name}</p>
                                             <p className="text-sm text-gray-600">{contractor.email}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <code className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">
+                                                    ID: {contractor.user_id}
+                                                </code>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        copyToClipboard(contractor.user_id).then(success => {
+                                                            if (success) showToast('Contractor ID copied!', 'success');
+                                                        });
+                                                    }}
+                                                    className="text-cyan-600 hover:text-cyan-700 p-1 rounded hover:bg-cyan-50 transition-colors"
+                                                    title="Copy Contractor ID"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                             <a href={`tel:${contractor.phone}`} className="text-sm text-cyan-600 hover:text-cyan-700">
                                                 {contractor.phone}
                                             </a>
