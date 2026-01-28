@@ -240,7 +240,7 @@ function HomeContent() {
                         <h1 className="text-2xl font-bold text-gray-900">LeadMan</h1>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded border border-orange-200">BETA</span>
-                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v4.0</span>
+                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v4.20</span>
                         </div>
                     </div>
                 </div>

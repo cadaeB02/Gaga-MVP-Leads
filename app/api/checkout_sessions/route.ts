@@ -23,8 +23,6 @@ export async function POST(req: NextRequest) {
         // Get the origin for redirect URLs
         const origin = req.headers.get('origin') || 'http://localhost:3000';
 
-        // Create Stripe checkout session without promo code
-        // (Promo code can be added manually in Stripe dashboard if needed)
         // Create line items based on type
         const line_items = type === 'payment' ? [
             {
@@ -40,7 +38,7 @@ export async function POST(req: NextRequest) {
             }
         ] : [
             {
-                price: 'price_1SrmpUECurkOxJwlXVyEFleL', // Legacy $60/month
+                price: 'price_1SrmpUECurkOxJwlXVyEFleL', // $60/month Maintenance Retainer
                 quantity: 1,
             },
         ];

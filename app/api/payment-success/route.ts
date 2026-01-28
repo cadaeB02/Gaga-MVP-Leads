@@ -17,50 +17,44 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
+    // First, get current credits to increment properly
+    const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('lead_credits')
+        .eq('id', userId)
+        .single();
+
+    const currentCredits = profile?.lead_credits || 0;
+
     if (type === 'payment') {
         // Award 1 lead credit for one-time payment
         console.log('💎 Awarding lead credit to user:', userId);
 
-        // First, get current credits to increment properly (avoiding overwriting if multi-tabbed)
-        const { data: profile } = await supabaseAdmin
+        const { error } = await supabaseAdmin
             .from('profiles')
-            .select('lead_credits')
-            .eq('id', userId)
-            .single();
+            .update({ lead_credits: currentCredits + 1 })
+            .eq('id', userId);
 
-        const currentCredits = profile?.lead_credits || 0;
-
-        const { data, error } = await supabaseAdmin
-            .from('profiles')
-            .update({
-                lead_credits: currentCredits + 1
-            })
-            .eq('id', userId)
-            .select();
-
-        if (error) {
-            console.error('❌ Error awarding credit:', error);
-        } else {
-            console.log('✅ Credit awarded:', data);
-        }
+        if (error) console.error('❌ Error awarding credit:', error);
     } else {
-        // Legacy: Activate the contractor's subscription
-        console.log('🔄 Activating subscription for user:', userId);
+        // Activate subscription AND award 1 credit (the Hook)
+        console.log('🔄 Activating monthly retainer + awarding hook credit for user:', userId);
 
-        const { data, error } = await supabaseAdmin
+        const { error: subError } = await supabaseAdmin
             .from('contractors')
             .update({
                 subscription_status: 'active',
                 subscription_start_date: new Date().toISOString()
             })
-            .eq('user_id', userId)
-            .select();
+            .eq('user_id', userId);
 
-        if (error) {
-            console.error('❌ Error activating contractor:', error);
-        } else {
-            console.log('✅ Contractor activated:', data);
-        }
+        const { error: creditError } = await supabaseAdmin
+            .from('profiles')
+            .update({ lead_credits: currentCredits + 1 })
+            .eq('id', userId);
+
+        if (subError) console.error('❌ Error activating subscription:', subError);
+        if (creditError) console.error('❌ Error awarding hook credit:', creditError);
     }
 
     // Redirect to dashboard

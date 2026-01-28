@@ -96,9 +96,9 @@ export default function DashboardPage() {
     const handleRevealLead = async (leadId: string) => {
         if (!user || !profile) return;
 
-        // If no credits, trigger payout
+        // If no credits, trigger buyout
         if (profile.lead_credits <= 0) {
-            handleUnlockLeads();
+            handleUnlockLeads('payment');
             return;
         }
 
@@ -126,7 +126,7 @@ export default function DashboardPage() {
 
             // 3. Refresh data
             await checkAuth();
-            alert('Lead unlocked! You can now view the contact info.');
+            alert('Lead claimed! You can now view the contact info.');
         } catch (err) {
             console.error('Reveal error:', err);
             alert('Failed to unlock lead');
@@ -135,7 +135,7 @@ export default function DashboardPage() {
         }
     };
 
-    const handleUnlockLeads = async () => {
+    const handleUnlockLeads = async (type: 'payment' | 'subscription' = 'payment') => {
         if (!user) return;
 
         setIsCheckoutLoading(true);
@@ -148,8 +148,8 @@ export default function DashboardPage() {
                 },
                 body: JSON.stringify({
                     userId: user.id,
-                    priceAmount: 4000, // $40.00 in cents
-                    type: 'payment', // One-time payment
+                    priceAmount: type === 'payment' ? 4000 : 6000,
+                    type: type,
                 }),
             });
 
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     return (
         <>
             <Header />
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 p-4 md:p-8 pt-24">
+            <div className="min-h-screen bg-gradient-to-br from-sky-50 to-cyan-50 p-4 md:p-8 pt-32 md:pt-40">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-6">
@@ -217,61 +217,76 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Credits Stats Bar */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Available Credits</p>
-                                <h2 className="text-3xl font-bold text-gray-900 mt-1">{profile?.lead_credits || 0}</h2>
-                            </div>
-                            <div className="bg-cyan-100 p-3 rounded-xl">
-                                <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Jobs</p>
-                                <h2 className="text-3xl font-bold text-gray-900 mt-1">
-                                    {leads.filter(l => ['CLAIMED', 'MATCHED'].includes(l.status)).length}
-                                </h2>
-                            </div>
-                            <div className="bg-green-100 p-3 rounded-xl">
-                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-cyan-600 to-blue-600 rounded-2xl p-6 shadow-lg text-white group cursor-pointer" onClick={handleUnlockLeads}>
-                            <div className="flex items-center justify-between">
+                    {/* Stats Bar - Only show if subscribed */}
+                    {isSubscribed && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
                                 <div>
-                                    <p className="text-cyan-100 text-sm font-semibold uppercase tracking-wider">Buy Credits</p>
-                                    <h2 className="text-2xl font-bold mt-1">$40 / Lead</h2>
+                                    <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Available Credits</p>
+                                    <h2 className="text-3xl font-bold text-gray-900 mt-1">{profile?.lead_credits || 0}</h2>
                                 </div>
-                                <button className="bg-white/20 p-3 rounded-xl group-hover:bg-white/30 transition-all">
-                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <div className="bg-cyan-100 p-3 rounded-xl">
+                                    <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
+                                <div>
+                                    <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Jobs</p>
+                                    <h2 className="text-3xl font-bold text-gray-900 mt-1">
+                                        {leads.filter(l => ['CLAIMED', 'MATCHED'].includes(l.status)).length}
+                                    </h2>
+                                </div>
+                                <div className="bg-green-100 p-3 rounded-xl">
+                                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-cyan-600 to-blue-600 rounded-2xl p-6 shadow-lg text-white group cursor-pointer" onClick={() => handleUnlockLeads('payment')}>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-cyan-100 text-sm font-semibold uppercase tracking-wider">Buy Credits</p>
+                                        <h2 className="text-2xl font-bold mt-1">$40 / Lead</h2>
+                                    </div>
+                                    <button className="bg-white/20 p-3 rounded-xl group-hover:bg-white/30 transition-all">
+                                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Leads Section */}
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                Assigned Marketplace
-                            </h2>
-                            <div className="bg-cyan-100 px-4 py-2 rounded-lg">
-                                <p className="text-cyan-800 font-bold">{leads.length} Active Assignments</p>
+                        {!isSubscribed ? (
+                            <div className="text-center py-16 px-4">
+                                <div className="bg-cyan-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-100">
+                                    <svg className="w-12 h-12 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-3xl font-bold text-gray-900 mb-4">Maintenance Retainer Required</h2>
+                                <p className="text-gray-600 text-lg max-w-xl mx-auto mb-8">
+                                    To unlock the Assigned Marketplace and start receiving exclusive leads, you must activate your monthly maintenance retainer of <strong>$60/month</strong>.
+                                </p>
+                                <button
+                                    onClick={() => handleUnlockLeads('subscription')}
+                                    disabled={isCheckoutLoading}
+                                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50"
+                                >
+                                    {isCheckoutLoading ? 'Starting Secure Checkout...' : 'Activate Monthly Retainer'}
+                                </button>
+                                <p className="text-gray-400 text-xs mt-6">
+                                    Secure payments powered by Stripe. Cancel anytime.
+                                </p>
                             </div>
-                        </div>
-
-                        {leads.length === 0 ? (
+                        ) : leads.length === 0 ? (
                             <div className="text-center py-12">
                                 <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,6 +298,14 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900">
+                                        Assigned Marketplace
+                                    </h2>
+                                    <div className="bg-cyan-100 px-4 py-2 rounded-lg">
+                                        <p className="text-cyan-800 font-bold">{leads.length} Active Assignments</p>
+                                    </div>
+                                </div>
                                 {leads.map((lead) => {
                                     const isRevealed = ['CLAIMED', 'MATCHED', 'CLOSED'].includes(lead.status);
 
@@ -370,7 +393,7 @@ export default function DashboardPage() {
                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                             </svg>
-                                                            Reveal Contact (1 Credit)
+                                                            Claim Lead & Reveal Contact
                                                         </>
                                                     )}
                                                 </button>

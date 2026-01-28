@@ -178,6 +178,10 @@ export default function ContractorJoinPage() {
                             </li>
                             <li className="flex items-start gap-3">
                                 <span className="bg-cyan-100 text-cyan-700 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm">3</span>
+                                <span>Once verified, activate your <strong>$60/mo Maintenance Retainer</strong> to unlock leads</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <span className="bg-cyan-100 text-cyan-700 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm">4</span>
                                 <span>Start receiving exclusive leads in your area!</span>
                             </li>
                         </ol>
