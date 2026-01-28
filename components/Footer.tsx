@@ -25,6 +25,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                             <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                            <li><Link href="/updates" className="hover:text-cyan-400 font-medium transition-colors">Platform Updates</Link></li>
                         </ul>
                     </div>
                     <div>
@@ -43,137 +44,6 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Version History */}
-                <div className="border-t border-gray-700 pt-8 mb-8">
-                    <h4 className="text-white font-semibold mb-4 text-center">Version History</h4>
-                    <div className="max-w-3xl mx-auto space-y-3 text-sm">
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.6 - Password Visibility & Timestamp Improvements
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added password visibility toggles (show/hide) to all password fields</li>
-                                <li>• Updated admin panel to show date + time (not just date)</li>
-                                <li>• Applied to contractor signup, contractor login, requester login</li>
-                            </ul>
-                        </details>
-
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.9 - Email Verification & Admin Approval
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Created email verification success page</li>
-                                <li>• Added admin approval requirement for contractors</li>
-                                <li>• Created "Pending Approval" page with clear status</li>
-                                <li>• Re-enabled RLS on requesters table</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.8 - Requester Routing & New Work Order
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Fixed homepage routing to check user role</li>
-                                <li>• Added "New Work Order" button to requester dashboard</li>
-                                <li>• Pre-filled customer data in new work order form</li>
-                                <li>• Fixed scroll-to-top on success screens</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.5 - Terms of Service Acceptance
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added TOS acceptance checkbox to contractor signup</li>
-                                <li>• Database tracking of TOS acceptance timestamp</li>
-                                <li>• Required checkbox with link to Terms of Service</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.4 - Version History
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added version history/changelog to footer</li>
-                                <li>• Expandable details for each version</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.3 - Dev Quick Login for Contractors
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added "Dev Quick Login" button to contractor login page</li>
-                                <li>• Instant login as testpro@example.com for testing</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.2 - Simplified Navigation
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Simplified navigation to role-based "Dashboard" and "Home" buttons</li>
-                                <li>• Removed cross-role dashboard links for better security</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.1 - Work Order Details & Navigation
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added navigation menu to Requester Dashboard</li>
-                                <li>• Made work order cards clickable</li>
-                                <li>• Created work order detail page at /requester/lead/[id]</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v2.0 - Requester Portal Foundation
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Created Requester role and database schema</li>
-                                <li>• Built Requester login page with dev quick-login</li>
-                                <li>• Created Requester dashboard showing work orders</li>
-                                <li>• Added "Already have an account? Log In" button to homepage</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                v1.29 - Legal Disclaimers
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Added comprehensive footer disclaimer</li>
-                                <li>• Created Terms of Service page with anti-theft clause</li>
-                                <li>• Added TCPA consent text to lead form</li>
-                            </ul>
-                        </details>
-
-                        <details className="bg-gray-800 rounded-lg p-4">
-                            <summary className="cursor-pointer font-semibold text-white hover:text-cyan-400 transition-colors">
-                                Earlier Versions (v1.0 - v1.28)
-                            </summary>
-                            <ul className="mt-3 ml-4 space-y-1 text-gray-400">
-                                <li>• Contractor signup and authentication</li>
-                                <li>• Stripe payment integration ($1 first month, $60/month)</li>
-                                <li>• Lead preview mode with blurred contact info</li>
-                                <li>• Admin dashboard for lead management</li>
-                                <li>• Contractor verification workflow</li>
-                                <li>• RLS security policies</li>
-                            </ul>
-                        </details>
-                    </div>
-                </div>
-
                 {/* Copyright & Contact */}
                 <div className="border-t border-gray-700 pt-8 text-center space-y-2">
                     <p className="text-sm">
@@ -183,6 +53,10 @@ export default function Footer() {
                         {' '} | {' '}
                         <Link href="/admin/leads" className="text-cyan-400 hover:text-cyan-300 transition-colors">
                             Admin
+                        </Link>
+                        {' '} | {' '}
+                        <Link href="/updates" className="text-gray-500 hover:text-cyan-400 transition-colors">
+                            v3.1
                         </Link>
                     </p>
                     <p className="text-sm">&copy; {new Date().getFullYear()} GC Ventures / The Digital Mechanic. All rights reserved.</p>

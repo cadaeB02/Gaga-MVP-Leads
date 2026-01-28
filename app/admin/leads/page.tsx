@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import ContractorsTable from '@/components/ContractorsTable';
 import SettingsView from '@/components/SettingsView';
+import LeadDetailModal from '@/components/LeadDetailModal';
+import ContractorDetailModal from '@/components/ContractorDetailModal';
 
 interface Lead {
     id: string;
@@ -13,6 +15,10 @@ interface Lead {
     trade_type: string;
     job_description: string;
     created_at: string;
+    requester_id?: string;
+    requesters?: {
+        is_verified: boolean;
+    };
 }
 
 interface Contractor {
@@ -26,6 +32,7 @@ interface Contractor {
     phone: string;
     license_status: 'PENDING' | 'ACTIVE' | 'REJECTED';
     insurance_verified: boolean;
+    verification_status?: string;
     created_at: string;
 }
 
@@ -40,6 +47,7 @@ export default function AdminLeadsPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+    const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
 
     const CORRECT_CODE = 'gaga2026';
 
@@ -66,7 +74,12 @@ export default function AdminLeadsPage() {
         try {
             const { data, error: supabaseError } = await supabase
                 .from('leads')
-                .select('*')
+                .select(`
+                    *,
+                    requesters (
+                        is_verified
+                    )
+                `)
                 .order('created_at', { ascending: false });
 
             if (supabaseError) throw supabaseError;
@@ -300,8 +313,15 @@ export default function AdminLeadsPage() {
                                             onClick={() => setSelectedLead(lead)}
                                         >
                                             <div className="mb-4">
-                                                <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-xs font-semibold text-cyan-700 mb-3">
-                                                    {lead.trade_type || 'General'}
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-xs font-semibold text-cyan-700">
+                                                        {lead.trade_type || 'General'}
+                                                    </div>
+                                                    {lead.requesters?.is_verified === false && (
+                                                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-semibold">
+                                                            ⚠️ Unverified Lead
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                                                     {truncateText(lead.job_description, 50)}
@@ -361,92 +381,45 @@ export default function AdminLeadsPage() {
                             )}
 
                             {selectedLead && (
-                                <div
-                                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                                    onClick={() => setSelectedLead(null)}
-                                >
-                                    <div
-                                        className="bg-white rounded-3xl p-8 max-w-2xl w-full border border-gray-200 shadow-2xl max-h-[90vh] overflow-y-auto relative"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button
-                                            onClick={() => setSelectedLead(null)}
-                                            className="absolute top-6 right-6 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all"
-                                        >
-                                            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-
-                                        <div className="mb-6">
-                                            <div className="inline-block bg-cyan-100 px-3 py-1 rounded-full text-sm font-semibold text-cyan-700 mb-3">
-                                                {selectedLead.trade_type || 'General'}
-                                            </div>
-                                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Job Details</h2>
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                {formatDate(selectedLead.created_at)}
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6 mb-8">
-                                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                                                <h3 className="text-sm font-semibold text-gray-600 mb-4">CUSTOMER INFORMATION</h3>
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Name</p>
-                                                        <p className="text-xl font-semibold text-gray-900">{selectedLead.name}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Phone</p>
-                                                        <p className="text-xl font-semibold text-gray-900">{selectedLead.phone}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Location</p>
-                                                        <p className="text-xl font-semibold text-gray-900">{selectedLead.zip_code}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                                                <h3 className="text-sm font-semibold text-gray-600 mb-4">JOB DESCRIPTION</h3>
-                                                <p className="text-gray-900 text-lg leading-relaxed whitespace-pre-wrap">
-                                                    {selectedLead.job_description || 'No description provided'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-4">
-                                            <a
-                                                href={`tel:${selectedLead.phone}`}
-                                                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg flex items-center justify-center gap-2"
-                                            >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                                                </svg>
-                                                Call Now
-                                            </a>
-                                            <button
-                                                onClick={() => setSelectedLead(null)}
-                                                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-xl font-bold transition-all"
-                                            >
-                                                Close
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <LeadDetailModal
+                                    lead={selectedLead}
+                                    onClose={() => setSelectedLead(null)}
+                                />
                             )}
                         </div>
                     )}
 
                     {/* Contractors View */}
                     {currentView === 'contractors' && (
-                        <ContractorsTable
-                            contractors={contractors}
-                            onRefresh={fetchContractors}
-                        />
+                        <div>
+                            <div className="mb-8">
+                                <h1 className="text-4xl font-bold text-gray-900 mb-2">Contractor Verification Queue</h1>
+                                <p className="text-gray-600">Review and approve contractor applications</p>
+                            </div>
+
+                            <ContractorsTable
+                                contractors={contractors}
+                                onRefresh={fetchContractors}
+                                onRowClick={(contractor: Contractor) => setSelectedContractor(contractor)}
+                            />
+
+                            {selectedContractor && (
+                                <ContractorDetailModal
+                                    contractor={selectedContractor}
+                                    onClose={() => setSelectedContractor(null)}
+                                    onVerify={async (id) => {
+                                        // The actual verification is handled by the API, 
+                                        // we just need to refresh the data
+                                        fetchContractors();
+                                        setSelectedContractor(null);
+                                    }}
+                                    onReject={async (id) => {
+                                        fetchContractors();
+                                        setSelectedContractor(null);
+                                    }}
+                                />
+                            )}
+                        </div>
                     )}
 
                     {/* Settings View */}

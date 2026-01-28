@@ -21,9 +21,10 @@ interface Contractor {
 interface ContractorsTableProps {
     contractors: Contractor[];
     onRefresh: () => void;
+    onRowClick?: (contractor: Contractor) => void;
 }
 
-export default function ContractorsTable({ contractors, onRefresh }: ContractorsTableProps) {
+export default function ContractorsTable({ contractors, onRefresh, onRowClick }: ContractorsTableProps) {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error') => {
@@ -154,7 +155,8 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
                 {contractors.map((contractor) => (
                     <div
                         key={contractor.id}
-                        className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4"
+                        className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4 transition-all ${onRowClick ? 'cursor-pointer hover:border-cyan-400 hover:shadow-md' : ''}`}
+                        onClick={() => onRowClick?.(contractor)}
                     >
                         <div className="flex items-start justify-between">
                             <div>
@@ -246,7 +248,11 @@ export default function ContractorsTable({ contractors, onRefresh }: Contractors
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {contractors.map((contractor) => (
-                                <tr key={contractor.id} className="hover:bg-gray-50 transition-colors">
+                                <tr
+                                    key={contractor.id}
+                                    className={`transition-colors ${onRowClick ? 'cursor-pointer hover:bg-cyan-50/50' : 'hover:bg-gray-50'}`}
+                                    onClick={() => onRowClick?.(contractor)}
+                                >
                                     <td className="px-6 py-4">
                                         <div>
                                             <p className="text-gray-900 font-semibold">{contractor.name}</p>
