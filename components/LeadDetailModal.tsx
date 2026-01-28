@@ -133,7 +133,7 @@ export default function LeadDetailModal({ lead, onClose, onVerify }: LeadDetailM
                         <div className="flex items-start justify-between mb-4">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-1">{lead.trade_type}</h3>
-                                <p className="text-gray-600 text-sm">Lead #{lead.id.slice(0, 8)}</p>
+                                <p className="text-gray-600 text-sm">Lead #{String(lead.id).slice(0, 8)}</p>
                             </div>
                             {lead.requesters && getVerificationBadge(lead.requesters.is_verified)}
                         </div>
