@@ -13,17 +13,30 @@ interface Lead {
     trade_type: string;
     job_description: string;
     created_at: string;
+    status: string;
+    visible_to_user_id?: string;
+    claimed_at?: string;
+    is_relead?: boolean;
     requesters?: {
         is_verified: boolean;
     };
 }
 
+interface Profile {
+    id: string;
+    role: string;
+    lead_credits: number;
+    beta_opt_in: boolean;
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [contractor, setContractor] = useState<any>(null);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
     useEffect(() => {
@@ -40,6 +53,15 @@ export default function DashboardPage() {
 
         setUser(user);
 
+        // Get profile info (for credits)
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        setProfile(profileData);
+
         // Get contractor info
         const { data: contractorData } = await supabase
             .from('contractors')
@@ -55,8 +77,7 @@ export default function DashboardPage() {
             return;
         }
 
-
-        // Get leads with requester info (show preview for all contractors)
+        // Get leads assigned specifically to this contractor
         const { data: leadsData } = await supabase
             .from('leads')
             .select(`
@@ -65,11 +86,53 @@ export default function DashboardPage() {
                     is_verified
                 )
             `)
-            .order('created_at', { ascending: false })
-            .limit(10);
+            .eq('visible_to_user_id', user.id)
+            .order('created_at', { ascending: false });
 
         setLeads(leadsData || []);
         setIsLoading(false);
+    };
+
+    const handleRevealLead = async (leadId: string) => {
+        if (!user || !profile) return;
+
+        // If no credits, trigger payout
+        if (profile.lead_credits <= 0) {
+            handleUnlockLeads();
+            return;
+        }
+
+        setIsActionLoading(leadId);
+
+        try {
+            // 1. Update the lead status and set claimed_at
+            const { error: leadError } = await supabase
+                .from('leads')
+                .update({
+                    status: 'CLAIMED',
+                    claimed_at: new Date().toISOString()
+                })
+                .eq('id', leadId);
+
+            if (leadError) throw leadError;
+
+            // 2. Subtract 1 from credits
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({ lead_credits: profile.lead_credits - 1 })
+                .eq('id', user.id);
+
+            if (profileError) throw profileError;
+
+            // 3. Refresh data
+            await checkAuth();
+            alert('Lead unlocked! You can now view the contact info.');
+        } catch (err) {
+            console.error('Reveal error:', err);
+            alert('Failed to unlock lead');
+        } finally {
+            setIsActionLoading(null);
+        }
     };
 
     const handleUnlockLeads = async () => {
@@ -85,6 +148,8 @@ export default function DashboardPage() {
                 },
                 body: JSON.stringify({
                     userId: user.id,
+                    priceAmount: 4000, // $40.00 in cents
+                    type: 'payment', // One-time payment
                 }),
             });
 
@@ -152,33 +217,57 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Unlock Banner (for unpaid contractors) */}
-                    {!isSubscribed && (
-                        <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-6 shadow-lg mb-6 text-white">
+                    {/* Credits Stats Bar */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Available Credits</p>
+                                <h2 className="text-3xl font-bold text-gray-900 mt-1">{profile?.lead_credits || 0}</h2>
+                            </div>
+                            <div className="bg-cyan-100 p-3 rounded-xl">
+                                <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Active Jobs</p>
+                                <h2 className="text-3xl font-bold text-gray-900 mt-1">
+                                    {leads.filter(l => ['CLAIMED', 'MATCHED'].includes(l.status)).length}
+                                </h2>
+                            </div>
+                            <div className="bg-green-100 p-3 rounded-xl">
+                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-cyan-600 to-blue-600 rounded-2xl p-6 shadow-lg text-white group cursor-pointer" onClick={handleUnlockLeads}>
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-2xl font-bold mb-2">🔓 Unlock Full Lead Access</h2>
-                                    <p className="text-cyan-100">Get phone numbers and contact info for just <span className="font-bold">$1 for your first month</span></p>
+                                    <p className="text-cyan-100 text-sm font-semibold uppercase tracking-wider">Buy Credits</p>
+                                    <h2 className="text-2xl font-bold mt-1">$40 / Lead</h2>
                                 </div>
-                                <button
-                                    onClick={handleUnlockLeads}
-                                    disabled={isCheckoutLoading}
-                                    className="bg-white text-cyan-600 px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg disabled:opacity-50"
-                                >
-                                    {isCheckoutLoading ? 'Loading...' : 'Unlock Now'}
+                                <button className="bg-white/20 p-3 rounded-xl group-hover:bg-white/30 transition-all">
+                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
-                    )}
+                    </div>
 
                     {/* Leads Section */}
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900">
-                                {isSubscribed ? 'Your Leads' : 'Available Leads Preview'}
+                                Assigned Marketplace
                             </h2>
                             <div className="bg-cyan-100 px-4 py-2 rounded-lg">
-                                <p className="text-cyan-800 font-bold">{leads.length} Leads</p>
+                                <p className="text-cyan-800 font-bold">{leads.length} Active Assignments</p>
                             </div>
                         </div>
 
@@ -194,81 +283,116 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {leads.map((lead) => (
-                                    <div key={lead.id} className="border border-gray-200 rounded-xl p-5 hover:border-cyan-400 transition-all relative">
-                                        {/* Blur overlay for unpaid contractors */}
-                                        {!isSubscribed && (
-                                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-                                                <div className="text-center">
-                                                    <svg className="w-12 h-12 text-cyan-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                    </svg>
-                                                    <p className="text-gray-900 font-bold">Unlock to View Contact Info</p>
+                                {leads.map((lead) => {
+                                    const isRevealed = ['CLAIMED', 'MATCHED', 'CLOSED'].includes(lead.status);
+
+                                    return (
+                                        <div key={lead.id} className={`border rounded-2xl p-6 transition-all relative overflow-hidden ${isRevealed ? 'border-green-200 bg-green-50/30' : 'border-gray-200 hover:border-cyan-400'
+                                            }`}>
+                                            {/* Status Badge */}
+                                            <div className="absolute top-0 right-0">
+                                                <div className={`px-4 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl text-white ${isRevealed ? 'bg-green-500' : 'bg-amber-400'
+                                                    }`}>
+                                                    {lead.status}
                                                 </div>
                                             </div>
-                                        )}
 
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <div className="flex flex-wrap gap-2 mb-2">
-                                                    <div className="inline-block bg-cyan-100 px-3 py-1 rounded-lg text-sm font-semibold text-cyan-700">
-                                                        {lead.trade_type}
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div>
+                                                    <div className="flex flex-wrap gap-2 mb-3">
+                                                        <div className="inline-block bg-cyan-100 px-3 py-1 rounded-lg text-xs font-bold text-cyan-700 uppercase">
+                                                            {lead.trade_type}
+                                                        </div>
+                                                        {lead.requesters?.is_verified ? (
+                                                            <div className="inline-block bg-green-100 px-3 py-1 rounded-lg text-xs font-bold text-green-700 flex items-center gap-1">
+                                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                </svg>
+                                                                Verified
+                                                            </div>
+                                                        ) : (
+                                                            <div className="inline-block bg-amber-100 px-3 py-1 rounded-lg text-xs font-bold text-amber-700 flex items-center gap-1">
+                                                                ⚠️ Unverified
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    {lead.requesters?.is_verified ? (
-                                                        <div className="inline-block bg-green-100 px-3 py-1 rounded-lg text-sm font-semibold text-green-700 flex items-center gap-1">
-                                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                            </svg>
-                                                            Verified Customer
-                                                        </div>
-                                                    ) : (
-                                                        <div className="inline-block bg-amber-100 px-3 py-1 rounded-lg text-sm font-semibold text-amber-700 flex items-center gap-1">
-                                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                            </svg>
-                                                            Unverified Lead
-                                                        </div>
-                                                    )}
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{lead.job_description}</h3>
+                                                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        Assigned {new Date(lead.created_at).toLocaleDateString()}
+                                                    </p>
                                                 </div>
-                                                <h3 className="text-lg font-bold text-gray-900">{lead.job_description}</h3>
                                             </div>
-                                            <span className="text-xs text-gray-500">
-                                                {new Date(lead.created_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
 
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500">Customer</p>
-                                                <p className="font-semibold text-gray-900">
-                                                    {isSubscribed ? lead.name : '████████'}
-                                                </p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-white/50 rounded-xl border border-gray-100 mt-4">
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Customer</p>
+                                                        <p className="font-bold text-gray-900 border-b border-gray-100 pb-1">
+                                                            {isRevealed ? lead.name : '████████'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Phone Number</p>
+                                                        <p className="font-bold text-cyan-600 text-lg">
+                                                            {isRevealed ? lead.phone : '(███) ███-████'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Location</p>
+                                                        <p className="font-bold text-gray-900 border-b border-gray-100 pb-1">
+                                                            {isRevealed ? `Zip Code: ${lead.zip_code}` : 'Bay Area Region'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Lead Type</p>
+                                                        <p className="font-bold text-gray-900">
+                                                            {lead.is_relead ? '🔄 RE-LEAD' : '💎 ORIGINAL'}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-gray-500">Phone</p>
-                                                <p className="font-semibold text-gray-900">
-                                                    {isSubscribed ? lead.phone : '(███) ███-████'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500">Location</p>
-                                                <p className="font-semibold text-gray-900">
-                                                    {isSubscribed ? `Zip: ${lead.zip_code}` : 'Bay Area'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500">Status</p>
-                                                <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">v2.7</span>
-                                            </div>
-                                        </div>
 
-                                        {isSubscribed && (
-                                            <button className="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-lg font-semibold transition-all">
-                                                Contact Customer
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
+                                            {!isRevealed ? (
+                                                <button
+                                                    onClick={() => handleRevealLead(lead.id)}
+                                                    disabled={isActionLoading === lead.id}
+                                                    className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                                                >
+                                                    {isActionLoading === lead.id ? (
+                                                        <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                                                    ) : (
+                                                        <>
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            </svg>
+                                                            Reveal Contact (1 Credit)
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <div className="mt-6 flex gap-3">
+                                                    <a
+                                                        href={`tel:${lead.phone}`}
+                                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-center transition-all shadow-md flex items-center justify-center gap-2"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                                        </svg>
+                                                        Call Now
+                                                    </a>
+                                                    <button className="flex-1 bg-white border-2 border-cyan-600 text-cyan-600 py-3 rounded-xl font-bold transition-all hover:bg-cyan-50">
+                                                        Work Started
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

@@ -13,13 +13,25 @@ interface WorkOrder {
     job_description: string;
     created_at: string;
     status: string;
+    visible_to_user_id?: string;
+    claimed_at?: string;
+    work_started?: string;
+}
+
+interface Contractor {
+    name: string;
+    business_name: string;
+    phone: string;
+    trade_type: string;
 }
 
 export default function WorkOrderDetailPage() {
     const router = useRouter();
     const params = useParams();
     const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
+    const [contractor, setContractor] = useState<Contractor | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isConfirming, setIsConfirming] = useState(false);
 
     useEffect(() => {
         loadWorkOrder();
@@ -48,10 +60,45 @@ export default function WorkOrderDetailPage() {
             }
 
             setWorkOrder(orderData);
+
+            // If lead is assigned, fetch contractor info
+            if (orderData.visible_to_user_id) {
+                const { data: contractorData } = await supabase
+                    .from('contractors')
+                    .select('name, business_name, phone, trade_type')
+                    .eq('user_id', orderData.visible_to_user_id)
+                    .single();
+
+                if (contractorData) {
+                    setContractor(contractorData);
+                }
+            }
         } catch (err) {
             console.error('Error loading work order:', err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleConfirmContact = async () => {
+        if (!workOrder) return;
+        setIsConfirming(true);
+
+        try {
+            const { error } = await supabase
+                .from('leads')
+                .update({ status: 'MATCHED' })
+                .eq('id', workOrder.id);
+
+            if (error) throw error;
+
+            await loadWorkOrder();
+            alert('Handshake confirmed! Your Pro is now locked in.');
+        } catch (err) {
+            console.error('Error confirming contact:', err);
+            alert('Failed to confirm contact');
+        } finally {
+            setIsConfirming(false);
         }
     };
 
@@ -124,8 +171,8 @@ export default function WorkOrderDetailPage() {
                                 </div>
                             </div>
                             <span className={`px-4 py-2 rounded-full text-sm font-semibold ${workOrder.status === 'OPEN'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-700'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
                                 }`}>
                                 {workOrder.status || 'OPEN'}
                             </span>
@@ -193,17 +240,74 @@ export default function WorkOrderDetailPage() {
                         </div>
                     </div>
 
+                    {/* Handshake Section (Phase 2 Beta Handshake) */}
+                    {workOrder.status === 'CLAIMED' && (
+                        <div className="mb-8 p-6 bg-cyan-50 border-2 border-cyan-200 rounded-3xl animate-in fade-in duration-500">
+                            <div className="flex flex-col md:flex-row items-center gap-6">
+                                <div className="bg-white p-4 rounded-2xl shadow-sm border border-cyan-100 flex-1 w-full text-center md:text-left">
+                                    <p className="text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1">Assigned Pro</p>
+                                    <h3 className="text-2xl font-black text-gray-900 leading-tight">
+                                        {contractor?.business_name || contractor?.name || 'Local Pro'}
+                                    </h3>
+                                    <p className="text-sm text-gray-500 mt-1">Has revealed your lead and is ready to work!</p>
+                                </div>
+                                <div className="flex-1 w-full">
+                                    <button
+                                        onClick={handleConfirmContact}
+                                        disabled={isConfirming}
+                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-2xl font-bold transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                                    >
+                                        {isConfirming ? (
+                                            <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                                        ) : (
+                                            <>
+                                                <svg className="w-6 h-6 text-cyan-200" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                                I have been contacted by this Pro
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {workOrder.status === 'MATCHED' && (
+                        <div className="mb-8 p-6 bg-green-50 border-2 border-green-200 rounded-3xl text-center">
+                            <div className="bg-white p-2 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                                <svg className="w-7 h-7 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">Double Opt-In Confirmed!</h3>
+                            <p className="text-gray-600 font-medium">You are officially matched with <b>{contractor?.business_name || contractor?.name}</b></p>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex gap-4">
-                        <a
-                            href={`tel:${workOrder.phone}`}
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg flex items-center justify-center gap-2"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                            </svg>
-                            Call Now
-                        </a>
+                        {workOrder.status === 'MATCHED' ? (
+                            <a
+                                href={`tel:${contractor?.phone}`}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                </svg>
+                                Call Pro Directly
+                            </a>
+                        ) : (
+                            <a
+                                href={`tel:${workOrder.phone}`}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                </svg>
+                                Call My Contact Info
+                            </a>
+                        )}
                         <button
                             onClick={() => router.push('/requester/dashboard')}
                             className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-xl font-bold transition-all"

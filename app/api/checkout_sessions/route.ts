@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { userId } = await req.json();
+        const { userId, type = 'subscription', priceAmount = 4000 } = await req.json();
 
         if (!userId) {
             return NextResponse.json(
@@ -25,18 +25,34 @@ export async function POST(req: NextRequest) {
 
         // Create Stripe checkout session without promo code
         // (Promo code can be added manually in Stripe dashboard if needed)
-        const session = await stripe.checkout.sessions.create({
-            mode: 'subscription',
-            line_items: [
-                {
-                    price: 'price_1SrmpUECurkOxJwlXVyEFleL', // $60/month
-                    quantity: 1,
+        // Create line items based on type
+        const line_items = type === 'payment' ? [
+            {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: 'Gaga Leads - 1 Exclusive Lead Credit',
+                        description: 'Unlock 1 assigned lead with full contact details.',
+                    },
+                    unit_amount: priceAmount,
                 },
-            ],
-            success_url: `${origin}/api/payment-success?session_id={CHECKOUT_SESSION_ID}&user_id=${userId}`,
+                quantity: 1,
+            }
+        ] : [
+            {
+                price: 'price_1SrmpUECurkOxJwlXVyEFleL', // Legacy $60/month
+                quantity: 1,
+            },
+        ];
+
+        const session = await stripe.checkout.sessions.create({
+            mode: type === 'payment' ? 'payment' : 'subscription',
+            line_items,
+            success_url: `${origin}/api/payment-success?session_id={CHECKOUT_SESSION_ID}&user_id=${userId}&type=${type}`,
             cancel_url: `${origin}/dashboard?payment=canceled`,
             metadata: {
                 supabase_user_id: userId,
+                purchase_type: type,
             },
         });
 
