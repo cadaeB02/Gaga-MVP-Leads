@@ -35,6 +35,13 @@ interface Contractor {
     insurance_verified: boolean;
     verification_status?: string;
     created_at: string;
+    stats?: {
+        total: number;
+        fulfilled: number;
+        current: number;
+        last_lead_at: string | null;
+        is_suggested: boolean;
+    };
 }
 
 type View = 'leads' | 'contractors' | 'lead-control' | 'settings';
@@ -96,16 +103,52 @@ export default function AdminLeadsPage() {
 
     const fetchContractors = async () => {
         try {
-            const { data, error: supabaseError } = await supabase
+            // Get all contractors
+            const { data: contractorsData, error: contractorsError } = await supabase
                 .from('contractors')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (supabaseError) throw supabaseError;
+            if (contractorsError) throw contractorsError;
 
-            setContractors(data || []);
+            // Get all assigned leads to calculate stats
+            const { data: leadsData, error: leadsError } = await supabase
+                .from('leads')
+                .select('visible_to_user_id, status, created_at')
+                .not('visible_to_user_id', 'is', null);
+
+            if (leadsError) throw leadsError;
+
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
+
+            // Map stats to contractors
+            const enrichedContractors = contractorsData.map(contractor => {
+                const contractorLeads = leadsData.filter(l => l.visible_to_user_id === contractor.user_id);
+
+                const stats = {
+                    total: contractorLeads.length,
+                    fulfilled: contractorLeads.filter(l => l.status === 'CLOSED').length,
+                    current: contractorLeads.filter(l => l.status === 'ASSIGNED').length,
+                    last_lead_at: contractorLeads.length > 0
+                        ? contractorLeads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+                        : null,
+                    is_suggested: false
+                };
+
+                // Suggestion logic: No leads ever OR no leads in the last 30 days
+                const lastLeadDate = stats.last_lead_at ? new Date(stats.last_lead_at) : null;
+                stats.is_suggested = stats.total === 0 || (lastLeadDate ? lastLeadDate < thirtyDaysAgo : true);
+
+                return {
+                    ...contractor,
+                    stats
+                };
+            });
+
+            setContractors(enrichedContractors);
         } catch (err) {
-            console.error('Error fetching contractors:', err);
+            console.error('Error fetching enriched contractors:', err);
         }
     };
 

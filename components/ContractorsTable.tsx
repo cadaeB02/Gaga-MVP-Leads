@@ -16,6 +16,13 @@ interface Contractor {
     insurance_verified: boolean;
     verification_status?: string;
     created_at: string;
+    stats?: {
+        total: number;
+        fulfilled: number;
+        current: number;
+        last_lead_at: string | null;
+        is_suggested: boolean;
+    };
 }
 
 interface ContractorsTableProps {
@@ -202,6 +209,20 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                                     {contractor.phone}
                                 </a>
                             </div>
+                            <div className="grid grid-cols-3 gap-2 pt-2">
+                                <div className="bg-gray-50 p-2 rounded text-center">
+                                    <p className="text-[10px] text-gray-500 uppercase">Gotten</p>
+                                    <p className="font-bold text-cyan-600">{contractor.stats?.total || 0}</p>
+                                </div>
+                                <div className="bg-gray-50 p-2 rounded text-center">
+                                    <p className="text-[10px] text-gray-500 uppercase">Done</p>
+                                    <p className="font-bold text-green-600">{contractor.stats?.fulfilled || 0}</p>
+                                </div>
+                                <div className="bg-gray-50 p-2 rounded text-center">
+                                    <p className="text-[10px] text-gray-500 uppercase">Now</p>
+                                    <p className="font-bold text-purple-600">{contractor.stats?.current || 0}</p>
+                                </div>
+                            </div>
                             <div>
                                 <p className="text-gray-500">Applied</p>
                                 <p className="text-gray-900">{formatDate(contractor.created_at)}</p>
@@ -258,6 +279,9 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                                     Status
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                    Leads
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
                                     Applied
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
@@ -280,6 +304,11 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                                                 <code className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">
                                                     ID: {contractor.user_id}
                                                 </code>
+                                                {contractor.stats?.is_suggested && (
+                                                    <span className="text-[9px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                                                        ⭐ SUGGESTED
+                                                    </span>
+                                                )}
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -310,6 +339,22 @@ export default function ContractorsTable({ contractors, onRefresh, onRowClick }:
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(contractor.license_status)}`}>
                                             {contractor.license_status}
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex gap-4">
+                                            <div className="text-center">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Got</p>
+                                                <p className="text-sm font-bold text-gray-700">{contractor.stats?.total || 0}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Done</p>
+                                                <p className="text-sm font-bold text-green-600">{contractor.stats?.fulfilled || 0}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Active</p>
+                                                <p className="text-sm font-bold text-purple-600">{contractor.stats?.current || 0}</p>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-700 text-sm">
                                         {formatDate(contractor.created_at)}

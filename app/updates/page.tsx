@@ -12,6 +12,17 @@ interface UpdateItem {
 
 const updates: UpdateItem[] = [
     {
+        version: 'v3.4',
+        title: 'Contractor Performance Stats & AI Suggestions',
+        date: 'January 28, 2026',
+        changes: [
+            'Added lead statistics: Gotten (Total), Done (Fulfilled), and Now (Active) leads',
+            'Implemented "⭐ SUGGESTED" badge for new or inactive contractors',
+            'Enhanced lead assignment intelligence based on 30-day activity logs',
+            'Improved mobile UI with horizontal performance metric grid'
+        ]
+    },
+    {
         version: 'v3.3',
         title: 'Contractor ID Visibility & Quick Copy',
         date: 'January 28, 2026',
