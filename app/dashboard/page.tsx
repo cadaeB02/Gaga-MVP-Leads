@@ -14,6 +14,8 @@ interface Lead {
     job_description: string;
     created_at: string;
     status: string;
+    tier: string;
+    is_verified?: boolean;
     visible_to_user_id?: string;
     claimed_at?: string;
     is_relead?: boolean;

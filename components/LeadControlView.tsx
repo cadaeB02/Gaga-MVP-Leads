@@ -9,6 +9,7 @@ interface Lead {
     trade_type: string;
     job_description: string;
     created_at: string;
+    tier?: string;
     visible_to_user_id?: string;
 }
 
