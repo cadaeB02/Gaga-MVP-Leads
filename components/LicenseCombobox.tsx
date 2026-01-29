@@ -19,7 +19,7 @@ export default function LicenseCombobox({ value, onChange, error, disabled }: Li
 
     // Filter licenses based on search
     const filteredLicenses = CSLB_LICENSES.filter(license =>
-        license.searchString.includes(search.toLowerCase())
+        license.searchString?.includes(search.toLowerCase())
     );
 
     // Initial search value based on existing value
