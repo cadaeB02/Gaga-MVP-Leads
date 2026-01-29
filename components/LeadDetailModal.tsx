@@ -11,6 +11,7 @@ interface Lead {
     trade_type: string;
     job_description: string;
     created_at: string;
+    tier?: string;
     requester_id?: string;
     requesters?: {
         is_verified: boolean;

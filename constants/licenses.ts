@@ -2,6 +2,7 @@ export interface LicenseOption {
     code: string;
     name: string;
     label: string;
+    searchString?: string;
 }
 
 export const CSLB_LICENSES: LicenseOption[] = [
