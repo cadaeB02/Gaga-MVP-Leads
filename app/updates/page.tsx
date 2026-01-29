@@ -12,6 +12,19 @@ interface UpdateItem {
 
 const updates: UpdateItem[] = [
     {
+        version: 'v4.26',
+        title: 'Lead Tiering, License Filtering & Premium Features',
+        date: 'January 29, 2026',
+        changes: [
+            '🎯 Implemented Lead Tiering: Premium (exclusive) and Standard ($20 pool) leads',
+            '🔍 Added Searchable California Contractor License Dropdown (full CSLB list)',
+            '⚡ Enhanced Manual Lead Assignment with contractor name/business search',
+            '🛠️ Fixed Credit Calculation Bug (atomic increment prevents double-crediting)',
+            '🔐 Updated RLS Policies for trade-matching and license-based lead visibility',
+            '📋 Added trade_type tracking to contractor profiles for intelligent matching'
+        ]
+    },
+    {
         version: 'v3.4',
         title: 'Contractor Performance Stats & AI Suggestions',
         date: 'January 28, 2026',
