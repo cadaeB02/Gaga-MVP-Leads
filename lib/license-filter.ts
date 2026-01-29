@@ -39,6 +39,6 @@ export function isEligible(contractorLicense: string, requiredTradeType: string)
  * Gets the display label for a license class.
  */
 export function getLicenseLabel(licenseClass: string): string {
-    const found = Object.values(LICENSE_CONFIG).find(c => c.class === licenseClass || c.tradeType === licenseClass);
+    const found = CSLB_LICENSES.find(l => l.code === licenseClass || l.label === licenseClass);
     return found ? found.label : licenseClass;
 }
