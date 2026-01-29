@@ -12,11 +12,21 @@ interface Lead {
     visible_to_user_id?: string;
 }
 
+interface Contractor {
+    user_id: string;
+    name: string;
+    business_name: string;
+    trade_type: string;
+}
+
 export default function LeadControlView() {
     const [leads, setLeads] = useState<Lead[]>([]);
+    const [contractors, setContractors] = useState<Contractor[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [assigningId, setAssigningId] = useState<string | null>(null);
     const [contractorUuid, setContractorUuid] = useState<{ [key: string]: string }>({});
+    const [searchTerm, setSearchTerm] = useState<{ [key: string]: string }>({});
+    const [showDropdown, setShowDropdown] = useState<{ [key: string]: boolean }>({});
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -40,8 +50,23 @@ export default function LeadControlView() {
         }
     };
 
+    const fetchContractors = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('contractors')
+                .select('user_id, name, business_name, trade_type')
+                .eq('license_status', 'ACTIVE'); // Only show active contractors
+            
+            if (error) throw error;
+            setContractors(data || []);
+        } catch (err) {
+            console.error('Error fetching contractors:', err);
+        }
+    };
+
     useEffect(() => {
         fetchUnassignedLeads();
+        fetchContractors();
     }, []);
 
     const handleAssign = async (leadId: string) => {
@@ -145,21 +170,54 @@ export default function LeadControlView() {
                                     </p>
                                 </div>
 
-                                <div className="w-full md:w-80 space-y-3">
+                                <div className="w-full md:w-80 space-y-3 relative">
                                     <div>
-                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">CONTRACTOR UUID</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Contractor User ID"
-                                            value={contractorUuid[lead.id] || ''}
-                                            onChange={(e) => handleUuidChange(lead.id, e.target.value)}
-                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-cyan-600"
-                                        />
+                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">ASSIGN CONTRACTOR</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Search contractor name..."
+                                                value={searchTerm[lead.id] || ''}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setSearchTerm(prev => ({ ...prev, [lead.id]: val }));
+                                                    setShowDropdown(prev => ({ ...prev, [lead.id]: true }));
+                                                    // If user clears input, clear selection
+                                                    if (!val) setContractorUuid(prev => ({ ...prev, [lead.id]: '' }));
+                                                }}
+                                                onFocus={() => setShowDropdown(prev => ({ ...prev, [lead.id]: true }))}
+                                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-cyan-600"
+                                            />
+                                            {showDropdown[lead.id] && (searchTerm[lead.id]?.length > 0) && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    {contractors
+                                                        .filter(c => 
+                                                            c.name.toLowerCase().includes(searchTerm[lead.id].toLowerCase()) || 
+                                                            c.business_name?.toLowerCase().includes(searchTerm[lead.id].toLowerCase())
+                                                        )
+                                                        .map(c => (
+                                                            <button
+                                                                key={c.user_id}
+                                                                className="w-full text-left px-4 py-2 hover:bg-cyan-50 text-sm transition-colors"
+                                                                onClick={() => {
+                                                                    setSearchTerm(prev => ({ ...prev, [lead.id]: c.business_name || c.name }));
+                                                                    setContractorUuid(prev => ({ ...prev, [lead.id]: c.user_id }));
+                                                                    setShowDropdown(prev => ({ ...prev, [lead.id]: false }));
+                                                                }}
+                                                            >
+                                                                <p className="font-bold text-gray-900">{c.business_name || c.name}</p>
+                                                                <p className="text-[10px] text-gray-500 uppercase">{c.trade_type}</p>
+                                                            </button>
+                                                        ))
+                                                    }
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => handleAssign(lead.id)}
-                                        disabled={assigningId === lead.id}
-                                        className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-md flex items-center justify-center gap-2 ${assigningId === lead.id
+                                        disabled={assigningId === lead.id || !contractorUuid[lead.id]}
+                                        className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-md flex items-center justify-center gap-2 ${assigningId === lead.id || !contractorUuid[lead.id]
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98]'
                                             }`}

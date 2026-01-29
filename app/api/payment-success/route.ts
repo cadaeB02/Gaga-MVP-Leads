@@ -17,23 +17,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    // First, get current credits to increment properly
-    const { data: profile } = await supabaseAdmin
-        .from('profiles')
-        .select('lead_credits')
-        .eq('id', userId)
-        .single();
-
-    const currentCredits = profile?.lead_credits || 0;
-
     if (type === 'payment') {
         // Award 1 lead credit for one-time payment
-        console.log('💎 Awarding lead credit to user:', userId);
+        console.log('💎 Awarding lead credit via RPC to user:', userId);
 
         const { error } = await supabaseAdmin
-            .from('profiles')
-            .update({ lead_credits: currentCredits + 1 })
-            .eq('id', userId);
+            .rpc('increment_credits', { target_user_id: userId, amount: 1 });
 
         if (error) console.error('❌ Error awarding credit:', error);
     } else {
@@ -49,9 +38,7 @@ export async function GET(req: NextRequest) {
             .eq('user_id', userId);
 
         const { error: creditError } = await supabaseAdmin
-            .from('profiles')
-            .update({ lead_credits: currentCredits + 1 })
-            .eq('id', userId);
+            .rpc('increment_credits', { target_user_id: userId, amount: 1 });
 
         if (subError) console.error('❌ Error activating subscription:', subError);
         if (creditError) console.error('❌ Error awarding hook credit:', creditError);

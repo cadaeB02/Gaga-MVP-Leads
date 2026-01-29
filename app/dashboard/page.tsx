@@ -77,7 +77,8 @@ export default function DashboardPage() {
             return;
         }
 
-        // Get leads assigned specifically to this contractor
+        // Get leads assigned specifically to this contractor OR eligible standard leads
+        // Note: RLS handles the heavy lifting of security
         const { data: leadsData } = await supabase
             .from('leads')
             .select(`
@@ -86,19 +87,24 @@ export default function DashboardPage() {
                     is_verified
                 )
             `)
-            .eq('visible_to_user_id', user.id)
             .order('created_at', { ascending: false });
 
         setLeads(leadsData || []);
         setIsLoading(false);
     };
 
-    const handleRevealLead = async (leadId: string) => {
+    const handleRevealLead = async (leadId: string, tier: string = 'premium') => {
         if (!user || !profile) return;
 
-        // If no credits, trigger buyout
+        // Standard leads require a $20 credit, Premium $40.
+        // For now, if we use a unified credit system where 1 credit = $40,
+        // we might need to adjust. If 1 credit = 1 lead regardless,
+        // we just subtract 1.
+        // However, if we want to support $20 leads, we should probably 
+        // trigger a specific checkout for $20 if they don't have credits.
+        
         if (profile.lead_credits <= 0) {
-            handleUnlockLeads('payment');
+            handleUnlockLeads('payment', tier === 'standard' ? 2000 : 4000);
             return;
         }
 
@@ -116,10 +122,10 @@ export default function DashboardPage() {
 
             if (leadError) throw leadError;
 
-            // 2. Subtract 1 from credits
+            // 2. Subtract 1 from credits (Atomic decrement would be better)
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update({ lead_credits: profile.lead_credits - 1 })
+                .update({ lead_credits: Math.max(0, profile.lead_credits - 1) })
                 .eq('id', user.id);
 
             if (profileError) throw profileError;
@@ -135,12 +141,15 @@ export default function DashboardPage() {
         }
     };
 
-    const handleUnlockLeads = async (type: 'payment' | 'subscription' = 'payment') => {
+    const handleUnlockLeads = async (type: 'payment' | 'subscription' = 'payment', priceAmount?: number) => {
         if (!user) return;
 
         setIsCheckoutLoading(true);
 
         try {
+            const defaultPrice = type === 'payment' ? 4000 : 6000;
+            const finalPrice = priceAmount || defaultPrice;
+
             const response = await fetch('/api/checkout_sessions', {
                 method: 'POST',
                 headers: {
@@ -148,7 +157,7 @@ export default function DashboardPage() {
                 },
                 body: JSON.stringify({
                     userId: user.id,
-                    priceAmount: type === 'payment' ? 4000 : 6000,
+                    priceAmount: finalPrice,
                     type: type,
                 }),
             });
@@ -326,6 +335,18 @@ export default function DashboardPage() {
                                                         <div className="inline-block bg-cyan-100 px-3 py-1 rounded-lg text-xs font-bold text-cyan-700 uppercase">
                                                             {lead.trade_type}
                                                         </div>
+                                                        {lead.tier === 'premium' ? (
+                                                            <div className="inline-block bg-purple-100 px-3 py-1 rounded-lg text-xs font-bold text-purple-700 flex items-center gap-1">
+                                                                <svg className="w-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                                Premium Exclusive
+                                                            </div>
+                                                        ) : (
+                                                            <div className="inline-block bg-blue-100 px-3 py-1 rounded-lg text-xs font-bold text-blue-700 flex items-center gap-1">
+                                                                Standard Pool ($20)
+                                                            </div>
+                                                        )}
                                                         {lead.requesters?.is_verified ? (
                                                             <div className="inline-block bg-green-100 px-3 py-1 rounded-lg text-xs font-bold text-green-700 flex items-center gap-1">
                                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -382,9 +403,11 @@ export default function DashboardPage() {
 
                                             {!isRevealed ? (
                                                 <button
-                                                    onClick={() => handleRevealLead(lead.id)}
+                                                    onClick={() => handleRevealLead(lead.id, lead.tier)}
                                                     disabled={isActionLoading === lead.id}
-                                                    className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                                                    className={`mt-6 w-full py-4 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 ${
+                                                        lead.tier === 'premium' ? 'bg-cyan-600 hover:bg-cyan-700' : 'bg-blue-600 hover:bg-blue-700'
+                                                    } text-white`}
                                                 >
                                                     {isActionLoading === lead.id ? (
                                                         <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>

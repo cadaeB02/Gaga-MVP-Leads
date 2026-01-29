@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import LicenseCombobox from '@/components/LicenseCombobox';
 
 export default function ContractorJoinPage() {
     const router = useRouter();
@@ -14,6 +15,7 @@ export default function ContractorJoinPage() {
         confirmPassword: '',
         licenseNumber: '',
         zipCode: '',
+        tradeType: '',
         insuranceCertified: false,
         tosAccepted: false
     });
@@ -48,6 +50,9 @@ export default function ContractorJoinPage() {
         }
         if (!formData.licenseNumber.trim()) {
             errors.licenseNumber = 'Please enter your license number';
+        }
+        if (!formData.tradeType) {
+            errors.tradeType = 'Please select your license type';
         }
         if (!formData.zipCode.trim()) {
             errors.zipCode = 'Please enter your zip code';
@@ -118,6 +123,7 @@ export default function ContractorJoinPage() {
                     role: 'contractor',
                     phone: formData.phone,
                     zip_code: formData.zipCode,
+                    trade_type: formData.tradeType,
                     tos_accepted_at: new Date().toISOString()
                 });
 
@@ -132,7 +138,7 @@ export default function ContractorJoinPage() {
                     email: formData.email,
                     phone: formData.phone,
                     license_number: formData.licenseNumber,
-                    trade_type: 'General Building (B)', // Default, can be updated later
+                    trade_type: formData.tradeType,
                     business_name: formData.name, // Using name as business name for now
                     license_status: 'ACTIVE',  // Auto-verified for MVP
                     insurance_verified: true,   // Auto-verified for MVP
@@ -294,6 +300,14 @@ export default function ContractorJoinPage() {
                                 <p className="text-red-600 text-sm mt-1">{fieldErrors.licenseNumber}</p>
                             )}
                         </div>
+
+                        {/* Trade Type / License Classification */}
+                        <LicenseCombobox
+                            value={formData.tradeType}
+                            onChange={(val) => setFormData({ ...formData, tradeType: val })}
+                            error={fieldErrors.tradeType}
+                            disabled={isSubmitting}
+                        />
 
                         {/* Zip Code */}
                         <div>
