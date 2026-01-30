@@ -35,25 +35,51 @@ export async function POST(req: NextRequest) {
             const userId = session.metadata?.supabase_user_id;
 
             if (userId) {
-                console.log(`✅ Payment completed for user ${userId}. Activating subscription.`);
-                
-                const { error: subError } = await supabaseAdmin
-                    .from('contractors')
-                    .update({
-                        subscription_status: 'active',
-                        subscription_start_date: new Date().toISOString(),
-                        stripe_customer_id: session.customer as string,
-                        stripe_subscription_id: session.subscription as string
-                    })
-                    .eq('user_id', userId);
+                const purchaseType = session.metadata?.type || session.metadata?.purchase_type;
 
-                if (subError) console.error('❌ Error activating subscription from webhook:', subError);
-                
-                // Also award the 1 credit "Hook"
-                const { error: creditError } = await supabaseAdmin
-                    .rpc('increment_credits', { target_user_id: userId, amount: 1 });
+                // Handle lead reveal payments
+                if (purchaseType === 'lead_reveal') {
+                    const leadId = session.metadata?.lead_id;
+                    console.log(`✅ Lead reveal payment completed for lead ${leadId}`);
+
+                    if (leadId) {
+                        // Update lead to revealed status
+                        const { error: leadError } = await supabaseAdmin
+                            .from('leads')
+                            .update({
+                                status_v2: 'revealed',
+                                revealed_at: new Date().toISOString()
+                            })
+                            .eq('id', leadId);
+
+                        if (leadError) {
+                            console.error('❌ Error revealing lead from webhook:', leadError);
+                        } else {
+                            console.log(`✅ Lead ${leadId} successfully revealed via payment`);
+                        }
+                    }
+                } else {
+                    // Handle subscription activation
+                    console.log(`✅ Payment completed for user ${userId}. Activating subscription.`);
                     
-                if (creditError) console.error('❌ Error awarding hook credit from webhook:', creditError);
+                    const { error: subError } = await supabaseAdmin
+                        .from('contractors')
+                        .update({
+                            subscription_status: 'active',
+                            subscription_start_date: new Date().toISOString(),
+                            stripe_customer_id: session.customer as string,
+                            stripe_subscription_id: session.subscription as string
+                        })
+                        .eq('user_id', userId);
+
+                    if (subError) console.error('❌ Error activating subscription from webhook:', subError);
+                    
+                    // Also award the 1 credit "Hook"
+                    const { error: creditError } = await supabaseAdmin
+                        .rpc('increment_credits', { target_user_id: userId, amount: 1 });
+                        
+                    if (creditError) console.error('❌ Error awarding hook credit from webhook:', creditError);
+                }
             }
             break;
 
