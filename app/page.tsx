@@ -95,9 +95,12 @@ function HomeContent() {
             if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setError('Valid email is required'); return false; }
             if (!formData.phone.trim()) { setError('Phone number is required'); return false; }
             if (!formData.zip_code.trim() || !/^\d{5}$/.test(formData.zip_code)) { setError('Valid zip code is required'); return false; }
-            if (!formData.trade_type) { setError('Select a service type'); return false; }
         }
         if (step === 2) {
+            if (!formData.trade_type) { setError('Select a service type'); return false; }
+            if (!formData.job_description.trim()) { setError('Describe your project'); return false; }
+        }
+        if (step === 3) {
             if (!formData.password || formData.password.length < 8) { setError('Minimum 8 character password'); return false; }
             if (formData.password !== formData.confirmPassword) { setError('Passwords do not match'); return false; }
             if (!formData.referralSource) { setError('Select how you heard about us'); return false; }
@@ -108,14 +111,14 @@ function HomeContent() {
     };
 
     const nextStep = () => {
-        if (validateStep(currentStep)) setCurrentStep(prev => Math.min(prev + 1, 2));
+        if (validateStep(currentStep)) setCurrentStep(prev => Math.min(prev + 1, 3));
     };
 
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateStep(2)) return;
+        if (!validateStep(3)) return;
         setIsSubmitting(true);
         localStorage.removeItem('requester_signup_draft');
 
@@ -190,7 +193,7 @@ function HomeContent() {
                     phone: formData.phone,
                     zip_code: formData.zip_code,
                     trade_type: formData.trade_type,
-                    job_description: 'Simplified request: ' + formData.trade_type,
+                    job_description: formData.job_description,
                     requester_id: requesterData.id
                 });
 
@@ -277,7 +280,7 @@ function HomeContent() {
                                     {/* Form Card */}
                                     <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 max-w-md mx-auto">
                                         <ProgressDots 
-                                            steps={2} 
+                                            steps={3} 
                                             currentStep={currentStep}
                                             onStepClick={(step) => {
                                                 if (step < currentStep) setCurrentStep(step);
@@ -285,7 +288,7 @@ function HomeContent() {
                                         />
                                         
                                         <form onSubmit={handleSubmit} className="space-y-5">
-                                            {/* Step 1: Personal Info & Service Type */}
+                                            {/* Step 1: Personal Info */}
                                             <StepContainer active={currentStep === 1}>
                                                 <div className="space-y-4">
                                                     <div>
@@ -306,6 +309,14 @@ function HomeContent() {
                                                             <input type="text" name="zip_code" placeholder="80301" value={formData.zip_code} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all" />
                                                         </div>
                                                     </div>
+                                                    {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                                                    <button type="button" onClick={nextStep} className="w-full bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">Next Step</button>
+                                                </div>
+                                            </StepContainer>
+
+                                            {/* Step 2: Project Details */}
+                                            <StepContainer active={currentStep === 2}>
+                                                <div className="space-y-4">
                                                     <div>
                                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
                                                         <select name="trade_type" value={formData.trade_type} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all cursor-pointer">
@@ -313,13 +324,20 @@ function HomeContent() {
                                                             {SERVICE_TYPES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                                         </select>
                                                     </div>
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">What do you need help with?</label>
+                                                        <textarea name="job_description" placeholder="Describe your project..." value={formData.job_description} onChange={handleChange} rows={4} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all resize-none" />
+                                                    </div>
                                                     {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-                                                    <button type="button" onClick={nextStep} className="w-full bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">Next Step</button>
+                                                    <div className="flex gap-3">
+                                                        <button type="button" onClick={prevStep} className="flex-1 px-5 py-5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all">Back</button>
+                                                        <button type="button" onClick={nextStep} className="flex-[2] bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">Next Step</button>
+                                                    </div>
                                                 </div>
                                             </StepContainer>
 
-                                            {/* Step 2: Account & Legal */}
-                                            <StepContainer active={currentStep === 2}>
+                                            {/* Step 3: Account & Legal */}
+                                            <StepContainer active={currentStep === 3}>
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>
