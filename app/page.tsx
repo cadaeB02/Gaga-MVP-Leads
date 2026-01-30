@@ -408,7 +408,6 @@ function HomeContent() {
                                         </div>
                                     </div>
                                 </>
-                                </div>
                             ) : (
                                 /* Success State */
                                 <div className="bg-white rounded-3xl p-12 shadow-xl border border-gray-200 text-center space-y-6">
