@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
             mode: type === 'payment' ? 'payment' : 'subscription',
             line_items,
             success_url: `${origin}/api/payment-success?session_id={CHECKOUT_SESSION_ID}&user_id=${userId}&type=${type}`,
-            cancel_url: `${origin}/dashboard?payment=canceled`,
+            cancel_url: `${origin}/contractor/dashboard?payment=canceled`,
             metadata: {
                 supabase_user_id: userId,
                 purchase_type: type,

@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type') || 'subscription';
 
     if (!userId) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
+        return NextResponse.redirect(new URL('/contractor/dashboard', req.url));
     }
 
     if (type === 'payment') {
@@ -45,5 +45,5 @@ export async function GET(req: NextRequest) {
     }
 
     // Redirect to dashboard
-    return NextResponse.redirect(new URL('/dashboard?payment=success', req.url));
+    return NextResponse.redirect(new URL('/contractor/dashboard?payment=success', req.url));
 }

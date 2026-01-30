@@ -67,7 +67,7 @@ function HomeContent() {
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile?.role === 'requester') router.push('/requester/dashboard');
-                else if (profile?.role === 'contractor') router.push('/dashboard');
+                else if (profile?.role === 'contractor') router.push('/contractor/dashboard');
             }
         };
         checkAuth();
@@ -85,23 +85,8 @@ function HomeContent() {
             [name]: newValue
         };
         setFormData(newFormData);
-
-        // Auto-advance check
-        if (name === 'zip_code' || name === 'trade_type' || name === 'job_description') {
-            checkAutoAdvance(currentStep, newFormData);
-        }
     };
 
-    const checkAutoAdvance = (step: number, currentData: typeof formData) => {
-        if (step === 1) {
-            const isComplete = currentData.name && currentData.email && currentData.phone && currentData.zip_code.length === 5;
-            if (isComplete) setTimeout(() => setCurrentStep(2), 400);
-        }
-        if (step === 2) {
-            const isComplete = currentData.trade_type && currentData.job_description.trim();
-            if (isComplete) setTimeout(() => setCurrentStep(3), 400);
-        }
-    };
 
     const validateStep = (step: number) => {
         setError('');
@@ -356,7 +341,7 @@ function HomeContent() {
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>
-                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Passowrd</label>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
                                                             <input type={showPassword ? "text" : "password"} name="password" placeholder="Min. 8 chars" value={formData.password} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600" />
                                                         </div>
                                                         <div>
@@ -408,7 +393,7 @@ function HomeContent() {
 
                                         <div className="mt-8 space-y-3 pt-6 border-t border-gray-100">
                                             <a
-                                                href="/requester/login"
+                                                href="/login"
                                                 className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-bold rounded-xl transition-all border border-gray-200 hover:border-cyan-400 text-center"
                                             >
                                                 Already have an account? Log In

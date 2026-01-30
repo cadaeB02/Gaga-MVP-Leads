@@ -175,16 +175,32 @@ export default function LeadControlView() {
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 mb-1 block">ASSIGN CONTRACTOR</label>
                                         <div className="relative">
-                                            <input
+                                             <input
                                                 type="text"
-                                                placeholder="Search contractor name..."
+                                                placeholder="Search name or paste UUID..."
                                                 value={searchTerm[lead.id] || ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     setSearchTerm(prev => ({ ...prev, [lead.id]: val }));
-                                                    setShowDropdown(prev => ({ ...prev, [lead.id]: true }));
-                                                    // If user clears input, clear selection
-                                                    if (!val) setContractorUuid(prev => ({ ...prev, [lead.id]: '' }));
+                                                    
+                                                    // Check if it's a UUID
+                                                    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
+                                                    if (isUuid) {
+                                                        const found = contractors.find(c => c.user_id === val.trim());
+                                                        if (found) {
+                                                            setContractorUuid(prev => ({ ...prev, [lead.id]: found.user_id }));
+                                                            setShowDropdown(prev => ({ ...prev, [lead.id]: false }));
+                                                            setSearchTerm(prev => ({ ...prev, [lead.id]: found.business_name || found.name }));
+                                                        } else {
+                                                            // Even if not found in current local list, still set it (maybe it's a new or hidden contractor)
+                                                            setContractorUuid(prev => ({ ...prev, [lead.id]: val.trim() }));
+                                                            setShowDropdown(prev => ({ ...prev, [lead.id]: false }));
+                                                        }
+                                                    } else {
+                                                        setShowDropdown(prev => ({ ...prev, [lead.id]: true }));
+                                                        // If user clears input, clear selection
+                                                        if (!val) setContractorUuid(prev => ({ ...prev, [lead.id]: '' }));
+                                                    }
                                                 }}
                                                 onFocus={() => setShowDropdown(prev => ({ ...prev, [lead.id]: true }))}
                                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-cyan-600"

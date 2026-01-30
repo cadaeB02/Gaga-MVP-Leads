@@ -42,31 +42,12 @@ export default function ContractorJoinPage() {
             [name]: newValue
         };
         setFormData(newFormData);
-
-        // Auto-advance check
-        if (name === 'zipCode' || name === 'licenseNumber' || name === 'insuranceCertified') {
-            checkAutoAdvance(currentStep, newFormData);
-        }
     };
 
-    const checkAutoAdvance = (step: number, currentData: typeof formData) => {
-        if (step === 1) {
-            const isComplete = currentData.name && currentData.email && currentData.phone && currentData.zipCode.length === 5;
-            if (isComplete) setTimeout(() => setCurrentStep(2), 400);
-        }
-        if (step === 2) {
-            const isComplete = currentData.tradeType && 
-                               currentData.tradeType !== 'OTHER (Please Specify)' && 
-                               currentData.licenseNumber && 
-                               currentData.insuranceCertified;
-            if (isComplete) setTimeout(() => setCurrentStep(3), 400);
-        }
-    };
 
     const handleLicenseChange = (val: string) => {
         const newFormData = { ...formData, tradeType: val };
         setFormData(newFormData);
-        checkAutoAdvance(2, newFormData);
     };
 
     const validateStep = (step: number) => {
@@ -230,10 +211,10 @@ export default function ContractorJoinPage() {
                     </div>
                     <div className="pt-4">
                         <button
-                            onClick={() => router.push('/')}
-                            className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl font-bold transition-all"
+                            onClick={() => router.push('/contractor/dashboard')}
+                            className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg transform hover:scale-105"
                         >
-                            Return to Home
+                            Go to My Dashboard
                         </button>
                     </div>
                 </div>
