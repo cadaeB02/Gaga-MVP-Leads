@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/Header';
+import Link from 'next/link';
+import LeadDetailModal from '@/components/LeadDetailModal';
 
 interface Lead {
     id: string;
@@ -11,12 +13,16 @@ interface Lead {
     status: string;
     created_at: string;
     zip_code: string;
+    name: string;
+    phone: string;
+    requester_id?: string;
 }
 
 export default function RequesterDashboard() {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
+    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -154,7 +160,10 @@ export default function RequesterDashboard() {
                                                 </div>
                                             </div>
                                             <div className="flex-shrink-0">
-                                                <button className="w-full md:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:border-cyan-600 hover:text-cyan-600 transition-all">
+                                                <button 
+                                                    onClick={() => setSelectedLead(lead)}
+                                                    className="w-full md:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:border-cyan-600 hover:text-cyan-600 transition-all"
+                                                >
                                                     View Details
                                                 </button>
                                             </div>
@@ -166,6 +175,13 @@ export default function RequesterDashboard() {
                     </div>
                 </div>
             </main>
+
+            {selectedLead && (
+                <LeadDetailModal
+                    lead={selectedLead}
+                    onClose={() => setSelectedLead(null)}
+                />
+            )}
         </div>
     );
 }
