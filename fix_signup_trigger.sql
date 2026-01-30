@@ -17,10 +17,11 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Insert into profiles table with metadata from auth.users
-  INSERT INTO public.profiles (id, full_name, trade_type, referral_source)
+  INSERT INTO public.profiles (id, full_name, role, trade_type, referral_source)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'role',
     NEW.raw_user_meta_data->>'trade_type',
     NEW.raw_user_meta_data->>'referral_source'
   );
