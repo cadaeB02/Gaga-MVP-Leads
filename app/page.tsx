@@ -67,7 +67,7 @@ function HomeContent() {
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile?.role === 'requester') router.push('/requester/dashboard');
-                else if (profile?.role === 'contractor') router.push('/dashboard');
+                else if (profile?.role === 'contractor') router.push('/contractor/dashboard');
             }
         };
         checkAuth();
