@@ -16,6 +16,8 @@ export default function ContractorJoinPage() {
         licenseNumber: '',
         zipCode: '',
         tradeType: '',
+        otherLicenseDescription: '',
+        referralSource: '',
         insuranceCertified: false,
         tosAccepted: false
     });
@@ -53,6 +55,12 @@ export default function ContractorJoinPage() {
         }
         if (!formData.tradeType) {
             errors.tradeType = 'Please select your license type';
+        }
+        if (formData.tradeType === 'OTHER (Please Specify)' && !formData.otherLicenseDescription.trim()) {
+            errors.otherLicenseDescription = 'Please describe your license type';
+        }
+        if (!formData.referralSource) {
+            errors.referralSource = 'Please tell us how you heard about us';
         }
         if (!formData.zipCode.trim()) {
             errors.zipCode = 'Please enter your zip code';
@@ -100,14 +108,16 @@ export default function ContractorJoinPage() {
                 return;
             }
 
-            // 1. Create Auth user
+            // 1. Create Auth user (profile will be auto-created by trigger)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/auth/confirm`,
                     data: {
-                        name: formData.name,
-                        phone: formData.phone,
+                        full_name: formData.name,
+                        trade_type: formData.tradeType,
+                        referral_source: formData.referralSource
                     }
                 }
             });
@@ -115,21 +125,7 @@ export default function ContractorJoinPage() {
             if (authError) throw authError;
             if (!authData.user) throw new Error('User creation failed');
 
-            // 2. Create profile
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: authData.user.id,
-                    role: 'contractor',
-                    phone: formData.phone,
-                    zip_code: formData.zipCode,
-                    trade_type: formData.tradeType,
-                    tos_accepted_at: new Date().toISOString()
-                });
-
-            if (profileError) throw profileError;
-
-            // 3. Create contractor entry
+            // 2. Create contractor entry
             const { error: contractorError } = await supabase
                 .from('contractors')
                 .insert({
@@ -139,9 +135,10 @@ export default function ContractorJoinPage() {
                     phone: formData.phone,
                     license_number: formData.licenseNumber,
                     trade_type: formData.tradeType,
-                    business_name: formData.name, // Using name as business name for now
-                    license_status: 'ACTIVE',  // Auto-verified for MVP
-                    insurance_verified: true,   // Auto-verified for MVP
+                    other_license_description: formData.tradeType === 'OTHER (Please Specify)' ? formData.otherLicenseDescription : null,
+                    business_name: formData.name,
+                    license_status: 'PENDING',
+                    insurance_verified: formData.insuranceCertified,
                     tos_accepted_at: new Date().toISOString()
                 });
 
@@ -281,6 +278,36 @@ export default function ContractorJoinPage() {
                             )}
                         </div>
 
+                        {/* Trade Type / License Classification */}
+                        <LicenseCombobox
+                            value={formData.tradeType}
+                            onChange={(val) => setFormData({ ...formData, tradeType: val })}
+                            error={fieldErrors.tradeType}
+                            disabled={isSubmitting}
+                        />
+
+                        {/* Conditional: Other License Description */}
+                        {formData.tradeType === 'OTHER (Please Specify)' && (
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Please describe your license type *
+                                </label>
+                                <textarea
+                                    name="otherLicenseDescription"
+                                    value={formData.otherLicenseDescription}
+                                    onChange={(e) => setFormData({ ...formData, otherLicenseDescription: e.target.value })}
+                                    placeholder="e.g., Specialty contractor for..."
+                                    rows={3}
+                                    className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all resize-none ${fieldErrors.otherLicenseDescription ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                        }`}
+                                    disabled={isSubmitting}
+                                />
+                                {fieldErrors.otherLicenseDescription && (
+                                    <p className="text-red-600 text-sm mt-1">{fieldErrors.otherLicenseDescription}</p>
+                                )}
+                            </div>
+                        )}
+
                         {/* License Number */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -291,7 +318,7 @@ export default function ContractorJoinPage() {
                                 name="licenseNumber"
                                 value={formData.licenseNumber}
                                 onChange={handleChange}
-                                placeholder="C-10 #123456"
+                                placeholder="1234567"
                                 className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white transition-all ${fieldErrors.licenseNumber ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
                                     }`}
                                 disabled={isSubmitting}
@@ -301,13 +328,32 @@ export default function ContractorJoinPage() {
                             )}
                         </div>
 
-                        {/* Trade Type / License Classification */}
-                        <LicenseCombobox
-                            value={formData.tradeType}
-                            onChange={(val) => setFormData({ ...formData, tradeType: val })}
-                            error={fieldErrors.tradeType}
-                            disabled={isSubmitting}
-                        />
+                        {/* How did you hear about us? */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                How did you hear about us? *
+                            </label>
+                            <select
+                                name="referralSource"
+                                value={formData.referralSource}
+                                onChange={handleChange}
+                                className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 focus:outline-none focus:bg-white transition-all ${fieldErrors.referralSource ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-cyan-600'
+                                    }`}
+                                disabled={isSubmitting}
+                            >
+                                <option value="">Select an option...</option>
+                                <option value="Google Search">Google Search</option>
+                                <option value="Social Media">Social Media (Facebook, Instagram, etc.)</option>
+                                <option value="Referral from Friend/Colleague">Referral from Friend/Colleague</option>
+                                <option value="Industry Event/Trade Show">Industry Event/Trade Show</option>
+                                <option value="Online Ad">Online Ad</option>
+                                <option value="Direct Mail">Direct Mail</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            {fieldErrors.referralSource && (
+                                <p className="text-red-600 text-sm mt-1">{fieldErrors.referralSource}</p>
+                            )}
+                        </div>
 
                         {/* Zip Code */}
                         <div>

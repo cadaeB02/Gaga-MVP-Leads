@@ -29,6 +29,7 @@ function HomeContent() {
         job_description: '',
         password: '',
         confirmPassword: '',
+        referralSource: '',
         tosAccepted: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,6 +113,10 @@ function HomeContent() {
             setError('You must accept the Terms of Service to continue');
             return false;
         }
+        if (!formData.referralSource) {
+            setError('Please tell us how you heard about us');
+            return false;
+        }
         return true;
     };
 
@@ -141,14 +146,15 @@ function HomeContent() {
                 return;
             }
 
-            // 2. Create Supabase Auth user
+            // 2. Create Supabase Auth user (profile will be auto-created by trigger)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/auth/confirm`,
                     data: {
-                        name: formData.name,
-                        phone: formData.phone,
+                        full_name: formData.name,
+                        referral_source: formData.referralSource
                     }
                 }
             });
@@ -164,20 +170,7 @@ function HomeContent() {
                 });
             }
 
-            // 3. Create profile entry
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: authData.user.id,
-                    role: 'requester',
-                    phone: formData.phone,
-                    zip_code: formData.zip_code,
-                    tos_accepted_at: new Date().toISOString()
-                });
-
-            if (profileError) throw profileError;
-
-            // 4. Create requester entry
+            // 3. Create requester entry
             console.log('Creating requester with user_id:', authData.user.id);
             const { data: requesterData, error: requesterError } = await supabase
                 .from('requesters')
@@ -186,6 +179,7 @@ function HomeContent() {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
+                    referral_source: formData.referralSource,
                     tos_accepted_at: new Date().toISOString()
                 })
                 .select()
@@ -197,7 +191,7 @@ function HomeContent() {
                 throw requesterError;
             }
 
-            // 5. Create lead linked to requester
+            // 4. Create lead linked to requester
             const { error: leadError } = await supabase
                 .from('leads')
                 .insert({
@@ -207,7 +201,7 @@ function HomeContent() {
                     zip_code: formData.zip_code,
                     trade_type: formData.trade_type,
                     job_description: formData.job_description,
-                    requester_id: requesterData.id  // Link to requester!
+                    requester_id: requesterData.id
                 });
 
             if (leadError) throw leadError;
@@ -384,6 +378,27 @@ function HomeContent() {
                                                     className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all resize-none"
                                                     disabled={isSubmitting}
                                                 />
+                                            </div>
+
+                                            {/* How did you hear about us? */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">How did you hear about us? *</label>
+                                                <select
+                                                    name="referralSource"
+                                                    value={formData.referralSource}
+                                                    onChange={handleChange}
+                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <option value="">Select an option...</option>
+                                                    <option value="Google Search">Google Search</option>
+                                                    <option value="Social Media">Social Media (Facebook, Instagram, etc.)</option>
+                                                    <option value="Referral from Friend/Family">Referral from Friend/Family</option>
+                                                    <option value="Contractor Recommendation">Contractor Recommendation</option>
+                                                    <option value="Online Ad">Online Ad</option>
+                                                    <option value="Direct Mail">Direct Mail</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
                                             </div>
 
                                             {/* Password */}

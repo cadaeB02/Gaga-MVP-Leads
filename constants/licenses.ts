@@ -49,7 +49,8 @@ export const CSLB_LICENSES: LicenseOption[] = [
     { code: 'C-55', name: 'Water Conditioning', label: 'C-55 (Water Conditioning)' },
     { code: 'C-57', name: 'Well Drilling', label: 'C-57 (Well Drilling)' },
     { code: 'C-60', name: 'Welding', label: 'C-60 (Welding)' },
-    { code: 'C-61', name: 'Limited Specialty', name_alt: 'Limited Specialty', label: 'C-61 (Limited Specialty)' }
+    { code: 'C-61', name: 'Limited Specialty', label: 'C-61 (Limited Specialty)' },
+    { code: 'OTHER', name: 'Other', label: 'Other (Please Specify)' }
 ].map(opt => ({
     ...opt,
     searchString: `${opt.code} ${opt.name}`.toLowerCase()
