@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+
 
 export default function ContractorDashboard() {
     const [userName, setUserName] = useState('');
@@ -116,7 +116,7 @@ export default function ContractorDashboard() {
                 </div>
             </main>
 
-            <Footer />
+
         </div>
     );
 }
