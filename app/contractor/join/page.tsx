@@ -186,7 +186,9 @@ export default function ContractorJoinPage() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err: any) {
             console.error('Signup error:', err);
-            setError(err.message || 'Failed to create account. Please try again.');
+            // Show detailed error for debugging
+            const errorMessage = err.message || err.error_description || err.hint || 'Failed to create account. Please try again.';
+            setError(`Database error: ${errorMessage}`);
         } finally {
             setIsSubmitting(false);
         }
