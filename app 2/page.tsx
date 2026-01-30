@@ -161,7 +161,6 @@ function HomeContent() {
                     emailRedirectTo: `${window.location.origin}/auth/confirm`,
                     data: {
                         full_name: formData.name,
-                        role: 'requester',
                         referral_source: formData.referralSource === 'Other' ? formData.referralDetail : formData.referralSource
                     }
                 }

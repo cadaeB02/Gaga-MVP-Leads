@@ -154,7 +154,6 @@ export default function ContractorJoinPage() {
                     emailRedirectTo: `${window.location.origin}/auth/confirm`,
                     data: {
                         full_name: formData.name,
-                        role: 'contractor',
                         trade_type: formData.tradeType,
                         referral_source: formData.referralSource === 'Other' ? formData.referralDetail : formData.referralSource
                     }
