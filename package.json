@@ -1,6 +1,6 @@
 {
   "name": "gaga-leads-mvp",
-  "version": "4.29",
+  "version": "4.30",
   "private": true,
   "scripts": {
     "dev": "next dev",

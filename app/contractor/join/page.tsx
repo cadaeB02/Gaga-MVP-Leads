@@ -28,8 +28,8 @@ export default function ContractorJoinPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type, checked } = e.target as HTMLInputElement;
         setFormData({
             ...formData,
             [name]: type === 'checkbox' ? checked : value
