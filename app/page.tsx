@@ -393,7 +393,7 @@ function HomeContent() {
 
                                         <div className="mt-8 space-y-3 pt-6 border-t border-gray-100">
                                             <a
-                                                href="/requester/login"
+                                                href="/login"
                                                 className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-bold rounded-xl transition-all border border-gray-200 hover:border-cyan-400 text-center"
                                             >
                                                 Already have an account? Log In
