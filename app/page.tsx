@@ -85,23 +85,8 @@ function HomeContent() {
             [name]: newValue
         };
         setFormData(newFormData);
-
-        // Auto-advance check
-        if (name === 'zip_code' || name === 'trade_type' || name === 'job_description') {
-            checkAutoAdvance(currentStep, newFormData);
-        }
     };
 
-    const checkAutoAdvance = (step: number, currentData: typeof formData) => {
-        if (step === 1) {
-            const isComplete = currentData.name && currentData.email && currentData.phone && currentData.zip_code.length === 5;
-            if (isComplete) setTimeout(() => setCurrentStep(2), 400);
-        }
-        if (step === 2) {
-            const isComplete = currentData.trade_type && currentData.job_description.trim();
-            if (isComplete) setTimeout(() => setCurrentStep(3), 400);
-        }
-    };
 
     const validateStep = (step: number) => {
         setError('');
