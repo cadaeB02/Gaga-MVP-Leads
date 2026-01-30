@@ -145,7 +145,23 @@ export default function ContractorJoinPage() {
             if (authError) throw authError;
             if (!authData.user) throw new Error('User creation failed');
 
-            // 2. Create contractor entry
+            // 2. Ensure profile exists (create if trigger didn't)
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: authData.user.id,
+                    email: formData.email,
+                    full_name: formData.name,
+                    role: 'contractor',
+                    lead_credits: 0
+                }, { onConflict: 'id' });
+
+            if (profileError) {
+                console.error('Profile creation error:', profileError);
+                // Continue anyway - profile might exist from trigger
+            }
+
+            // 3. Create contractor entry
             const { error: contractorError } = await supabase
                 .from('contractors')
                 .insert({
