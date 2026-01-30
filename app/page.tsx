@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import ContractorPortal from '@/components/ContractorPortal';
 import { useSearchParams, useRouter } from 'next/navigation';
+import ProgressDots from '@/components/ProgressDots';
+import StepContainer from '@/components/StepContainer';
 
 const SERVICE_TYPES = [
     { label: 'Remodel / Addition', value: 'General Building (B)' },
@@ -20,6 +22,7 @@ function HomeContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [mode, setMode] = useState<'customer' | 'contractor'>('customer');
+    const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -38,23 +41,32 @@ function HomeContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Check if user is logged in and redirect to appropriate dashboard
+    // Persistent Draft Saving
+    useEffect(() => {
+        const saved = localStorage.getItem('requester_signup_draft');
+        if (saved) {
+            try {
+                const { data, step } = JSON.parse(saved);
+                setFormData(prev => ({ ...prev, ...data }));
+                setCurrentStep(step);
+            } catch (e) {
+                console.error('Failed to load draft');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('requester_signup_draft', JSON.stringify({ data: formData, step: currentStep }));
+    }, [formData, currentStep]);
+
+    // Check if user is logged in
     useEffect(() => {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Check user role from profiles table
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profile?.role === 'requester') {
-                    router.push('/requester/dashboard');
-                } else if (profile?.role === 'contractor') {
-                    router.push('/dashboard');
-                }
+                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+                if (profile?.role === 'requester') router.push('/requester/dashboard');
+                else if (profile?.role === 'contractor') router.push('/dashboard');
             }
         };
         checkAuth();
@@ -65,70 +77,56 @@ function HomeContent() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
+        const newValue = type === 'checkbox' ? checked : value;
 
         setFormData({
             ...formData,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: newValue
         });
+
+        // Auto-advance Zip
+        if (name === 'zip_code' && value.length === 5 && /^\d{5}$/.test(value)) {
+            setTimeout(() => setCurrentStep(2), 300);
+        }
+
+        // Auto-advance Service Type if description exists
+        if (name === 'trade_type' && value && formData.job_description) {
+            setTimeout(() => setCurrentStep(3), 300);
+        }
     };
 
-    const validateForm = () => {
-        if (!formData.trade_type) {
-            setError('Please select a service type');
-            return false;
+    const validateStep = (step: number) => {
+        setError('');
+        if (step === 1) {
+            if (!formData.name.trim()) { setError('Enter your name'); return false; }
+            if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setError('Valid email is required'); return false; }
+            if (!formData.phone.trim()) { setError('Phone number is required'); return false; }
+            if (!formData.zip_code.trim() || !/^\d{5}$/.test(formData.zip_code)) { setError('Valid zip code is required'); return false; }
         }
-        if (!formData.name.trim()) {
-            setError('Please enter your name');
-            return false;
+        if (step === 2) {
+            if (!formData.trade_type) { setError('Select a service type'); return false; }
+            if (!formData.job_description.trim()) { setError('Describe your project'); return false; }
         }
-        if (!formData.email.trim()) {
-            setError('Please enter your email');
-            return false;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            setError('Please enter a valid email address');
-            return false;
-        }
-        if (!formData.phone.trim()) {
-            setError('Please enter your phone number');
-            return false;
-        }
-        if (!formData.zip_code.trim()) {
-            setError('Please enter your zip code');
-            return false;
-        }
-        if (!formData.job_description.trim()) {
-            setError('Please describe your job');
-            return false;
-        }
-        if (!formData.password || formData.password.length < 8) {
-            setError('Password must be at least 8 characters');
-            return false;
-        }
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return false;
-        }
-        if (!formData.tosAccepted) {
-            setError('You must accept the Terms of Service to continue');
-            return false;
-        }
-        if (!formData.referralSource) {
-            setError('Please tell us how you heard about us');
-            return false;
+        if (step === 3) {
+            if (!formData.password || formData.password.length < 8) { setError('Minimum 8 character password'); return false; }
+            if (formData.password !== formData.confirmPassword) { setError('Passwords do not match'); return false; }
+            if (!formData.referralSource) { setError('Select how you heard about us'); return false; }
+            if (!formData.tosAccepted) { setError('Accept the Terms of Service'); return false; }
         }
         return true;
     };
 
+    const nextStep = () => {
+        if (validateStep(currentStep)) setCurrentStep(prev => Math.min(prev + 1, 3));
+    };
+
+    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-
-        if (!validateForm()) {
-            return;
-        }
-
+        if (!validateStep(3)) return;
         setIsSubmitting(true);
+        localStorage.removeItem('requester_signup_draft');
 
         try {
             // Phase 4: Full Account Creation Flow
@@ -296,242 +294,102 @@ function HomeContent() {
 
                                     {/* Form Card */}
                                     <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
+                                        <ProgressDots 
+                                            steps={3} 
+                                            currentStep={currentStep}
+                                            onStepClick={(step) => {
+                                                if (step < currentStep) setCurrentStep(step);
+                                            }}
+                                        />
+                                        
                                         <form onSubmit={handleSubmit} className="space-y-5">
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
-                                                <select
-                                                    name="trade_type"
-                                                    value={formData.trade_type}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all appearance-none cursor-pointer"
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="" className="bg-white">Select a service...</option>
-                                                    {SERVICE_TYPES.map((service) => (
-                                                        <option key={service.value} value={service.value} className="bg-white">
-                                                            {service.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Your Name</label>
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    placeholder="John Smith"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                    disabled={isSubmitting}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    placeholder="john@example.com"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                    disabled={isSubmitting}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                                <input
-                                                    type="tel"
-                                                    name="phone"
-                                                    placeholder="(555) 123-4567"
-                                                    value={formData.phone}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                    disabled={isSubmitting}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Zip Code</label>
-                                                <input
-                                                    type="text"
-                                                    name="zip_code"
-                                                    placeholder="80301"
-                                                    value={formData.zip_code}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                    disabled={isSubmitting}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">What do you need help with?</label>
-                                                <textarea
-                                                    name="job_description"
-                                                    placeholder="Describe your project..."
-                                                    value={formData.job_description}
-                                                    onChange={handleChange}
-                                                    rows={4}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all resize-none"
-                                                    disabled={isSubmitting}
-                                                />
-                                            </div>
-
-                                            {/* How did you hear about us? */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">How did you hear about us? *</label>
-                                                <select
-                                                    name="referralSource"
-                                                    value={formData.referralSource}
-                                                    onChange={handleChange}
-                                                    className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select an option...</option>
-                                                    <option value="Google Search">Google Search</option>
-                                                    <option value="Social Media">Social Media (Facebook, Instagram, etc.)</option>
-                                                    <option value="Referral from Friend/Family">Referral from Friend/Family</option>
-                                                    <option value="Contractor Recommendation">Contractor Recommendation</option>
-                                                    <option value="Online Ad">Online Ad</option>
-                                                    <option value="Direct Mail">Direct Mail</option>
-                                                    <option value="Other">Other</option>
-                                                </select>
-                                            </div>
-
-                                            {/* Password */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Create Password *</label>
-                                                <div className="relative">
-                                                    <input
-                                                        type={showPassword ? "text" : "password"}
-                                                        name="password"
-                                                        placeholder="Min. 8 characters"
-                                                        value={formData.password}
-                                                        onChange={handleChange}
-                                                        className="w-full px-5 py-4 pr-12 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                        disabled={isSubmitting}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                                                        tabIndex={-1}
-                                                    >
-                                                        {showPassword ? (
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                                            </svg>
-                                                        ) : (
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                            </svg>
-                                                        )}
-                                                    </button>
+                                            {/* Step 1: Personal Info */}
+                                            <StepContainer active={currentStep === 1}>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Your Name</label>
+                                                        <input type="text" name="name" placeholder="John Smith" value={formData.name} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                                        <input type="email" name="email" placeholder="john@example.com" value={formData.email} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all" />
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                                            <input type="tel" name="phone" placeholder="(555) 123-4567" value={formData.phone} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Zip Code</label>
+                                                            <input type="text" name="zip_code" placeholder="80301" value={formData.zip_code} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all" />
+                                                        </div>
+                                                    </div>
+                                                    {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                                                    <button type="button" onClick={nextStep} className="w-full bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">Next Step</button>
                                                 </div>
-                                            </div>
+                                            </StepContainer>
 
-                                            {/* Confirm Password */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password *</label>
-                                                <div className="relative">
-                                                    <input
-                                                        type={showConfirmPassword ? "text" : "password"}
-                                                        name="confirmPassword"
-                                                        placeholder="Re-enter password"
-                                                        value={formData.confirmPassword}
-                                                        onChange={handleChange}
-                                                        className="w-full px-5 py-4 pr-12 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all"
-                                                        disabled={isSubmitting}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                                                        tabIndex={-1}
-                                                    >
-                                                        {showConfirmPassword ? (
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                                            </svg>
-                                                        ) : (
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                            </svg>
-                                                        )}
-                                                    </button>
+                                            {/* Step 2: Project Details */}
+                                            <StepContainer active={currentStep === 2}>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
+                                                        <select name="trade_type" value={formData.trade_type} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all cursor-pointer">
+                                                            <option value="">Select a service...</option>
+                                                            {SERVICE_TYPES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">What do you need help with?</label>
+                                                        <textarea name="job_description" placeholder="Describe your project..." value={formData.job_description} onChange={handleChange} rows={4} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-cyan-600 transition-all resize-none" />
+                                                    </div>
+                                                    {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                                                    <div className="flex gap-3">
+                                                        <button type="button" onClick={prevStep} className="flex-1 px-5 py-5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all">Back</button>
+                                                        <button type="button" onClick={nextStep} className="flex-[2] bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">Next Step</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </StepContainer>
 
-                                            {/* Terms of Service Acceptance */}
-                                            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
-                                                <label className="flex items-start gap-3 cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="tosAccepted"
-                                                        checked={formData.tosAccepted}
-                                                        onChange={handleChange}
-                                                        className="mt-1 w-5 h-5 text-cyan-600 border-2 border-gray-300 rounded focus:ring-cyan-500"
-                                                        disabled={isSubmitting}
-                                                    />
-                                                    <span className="text-sm text-gray-900 font-semibold">
-                                                        I have read and agree to the{' '}
-                                                        <a
-                                                            href="/terms"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-cyan-600 hover:text-cyan-700 underline"
-                                                        >
-                                                            Terms of Service
-                                                        </a> *
-                                                    </span>
-                                                </label>
-                                            </div>
-
-                                            {error && (
-                                                <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-xl text-center">
-                                                    {error}
+                                            {/* Step 3: Account & Legal */}
+                                            <StepContainer active={currentStep === 3}>
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Passowrd</label>
+                                                            <input type={showPassword ? "text" : "password"} name="password" placeholder="Min. 8 chars" value={formData.password} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm</label>
+                                                            <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Repeat..." value={formData.confirmPassword} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600" />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">How did you hear about us?</label>
+                                                        <select name="referralSource" value={formData.referralSource} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600">
+                                                            <option value="">Select option...</option>
+                                                            <option value="Google">Google Search</option>
+                                                            <option value="Social">Social Media</option>
+                                                            <option value="Friend">Friend/Family</option>
+                                                            <option value="Other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 space-y-3">
+                                                        <label className="flex items-start gap-3 cursor-pointer">
+                                                            <input type="checkbox" name="tosAccepted" checked={formData.tosAccepted} onChange={handleChange} className="mt-1 w-5 h-5 text-cyan-600 rounded" />
+                                                            <span className="text-xs text-gray-900 leading-tight font-semibold">I agree to the <a href="/terms" target="_blank" className="text-cyan-600 underline">Terms of Service</a> & <a href="/privacy" target="_blank" className="text-cyan-600 underline">Marketing Consent</a> *</span>
+                                                        </label>
+                                                        <p className="text-[10px] text-gray-500 italic leading-tight">By continuing, I express consent to receive marketing and informational communications via telephone, SMS, and email. Frequency varies. Reply STOP to cancel.</p>
+                                                    </div>
+                                                    {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                                                    <div className="flex gap-3">
+                                                        <button type="button" onClick={prevStep} className="flex-1 px-5 py-5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all">Back</button>
+                                                        <button type="submit" disabled={isSubmitting} className="flex-[2] bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl shadow-lg transform hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                                            {isSubmitting ? 'Submitting...' : 'Get Your Free Quote'}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            )}
-
-                                            {/* TCPA Consent */}
-                                            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                                                <p className="text-xs text-gray-700 leading-relaxed">
-                                                    <strong className="text-gray-900">CONSENT TO CONTACT:</strong> By clicking "Get Your Free Quote" below, I expressly consent to receive marketing and informational communications from GC Ventures (The Digital Mechanic) and its network of partner contractors via telephone calls, text messages (SMS/MMS), and emails to the phone number and email address I have provided. I understand and agree that:
-                                                </p>
-                                                <ul className="text-xs text-gray-700 mt-2 ml-4 space-y-1">
-                                                    <li>• These communications may be made using an automatic telephone dialing system, artificial or prerecorded voice messages, and/or text messages</li>
-                                                    <li>• My consent applies even if the phone number I provide is currently listed on any state or federal Do Not Call registry</li>
-                                                    <li>• I am not required to provide this consent as a condition of purchasing any goods or services</li>
-                                                    <li>• I may revoke this consent at any time by replying "STOP" to any text message or contacting support</li>
-                                                    <li>• Message and data rates may apply; message frequency varies</li>
-                                                </ul>
-                                                <p className="text-xs text-gray-600 mt-2">
-                                                    For more information, see our <a href="/terms" className="text-cyan-600 hover:text-cyan-700 underline">Terms of Service</a> and <a href="/privacy" className="text-cyan-600 hover:text-cyan-700 underline">Privacy Policy</a>.
-                                                </p>
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                                className="w-full bg-cyan-600 text-white py-5 text-lg font-bold rounded-xl hover:bg-cyan-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
-                                            >
-                                                {isSubmitting ? (
-                                                    <span className="flex items-center justify-center gap-2">
-                                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Submitting...
-                                                    </span>
-                                                ) : (
-                                                    'Create Account & Submit Request'
-                                                )}
-                                            </button>
+                                            </StepContainer>
                                         </form>
                                     </div>
                                 </div>
