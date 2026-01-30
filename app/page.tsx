@@ -33,6 +33,7 @@ function HomeContent() {
         password: '',
         confirmPassword: '',
         referralSource: '',
+        referralDetail: '',
         tosAccepted: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,6 +112,7 @@ function HomeContent() {
             if (!formData.password || formData.password.length < 8) { setError('Minimum 8 character password'); return false; }
             if (formData.password !== formData.confirmPassword) { setError('Passwords do not match'); return false; }
             if (!formData.referralSource) { setError('Select how you heard about us'); return false; }
+            if (formData.referralSource === 'Other' && !formData.referralDetail.trim()) { setError('Please specify how you heard about us'); return false; }
             if (!formData.tosAccepted) { setError('Accept the Terms of Service'); return false; }
         }
         return true;
@@ -152,7 +154,7 @@ function HomeContent() {
                     emailRedirectTo: `${window.location.origin}/auth/confirm`,
                     data: {
                         full_name: formData.name,
-                        referral_source: formData.referralSource
+                        referral_source: formData.referralSource === 'Other' ? formData.referralDetail : formData.referralSource
                     }
                 }
             });
@@ -177,7 +179,7 @@ function HomeContent() {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
-                    referral_source: formData.referralSource,
+                    referral_source: formData.referralSource === 'Other' ? formData.referralDetail : formData.referralSource,
                     tos_accepted_at: new Date().toISOString()
                 })
                 .select()
@@ -244,11 +246,11 @@ function HomeContent() {
             <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-12">
                 <div className="w-full max-w-4xl">
                     {/* Toggle Switch */}
-                    <div className="flex justify-center mb-8">
+                    <div className="flex justify-center mb-12">
                         <div className="bg-white rounded-full p-1.5 border border-gray-200 inline-flex shadow-sm">
                             <button
                                 onClick={() => setMode('customer')}
-                                className={`px-8 py-3 rounded-full font-semibold transition-all ${mode === 'customer'
+                                className={`px-8 py-3 rounded-full font-bold transition-all ${mode === 'customer'
                                     ? 'bg-cyan-600 text-white shadow-md'
                                     : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -257,7 +259,7 @@ function HomeContent() {
                             </button>
                             <button
                                 onClick={() => setMode('contractor')}
-                                className={`px-8 py-3 rounded-full font-semibold transition-all ${mode === 'contractor'
+                                className={`px-8 py-3 rounded-full font-bold transition-all ${mode === 'contractor'
                                     ? 'bg-cyan-600 text-white shadow-md'
                                     : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -269,11 +271,11 @@ function HomeContent() {
 
                     {/* Customer View */}
                     {mode === 'customer' && (
-                        <div className="w-full max-w-lg mx-auto">
+                        <div className="w-full max-w-2xl mx-auto space-y-8">
                             {!isSuccess ? (
-                                <div className="space-y-8">
+                                <>
                                     {/* Hero Section */}
-                                    <div className="text-center space-y-4">
+                                    <div className="text-center space-y-6">
                                         <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                                             We find <span className="text-cyan-600">contractors</span> for you
                                         </h1>
@@ -282,18 +284,8 @@ function HomeContent() {
                                         </p>
                                     </div>
 
-                                    {/* Login Button */}
-                                    <div className="space-y-3">
-                                        <a
-                                            href="/requester/login"
-                                            className="block w-full bg-white hover:bg-gray-50 text-gray-700 py-4 rounded-2xl font-semibold transition-all shadow-md border-2 border-gray-200 text-center"
-                                        >
-                                            Already have an account? Log In
-                                        </a>
-                                    </div>
-
                                     {/* Form Card */}
-                                    <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
+                                    <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 max-w-md mx-auto">
                                         <ProgressDots 
                                             steps={3} 
                                             currentStep={currentStep}
@@ -366,7 +358,7 @@ function HomeContent() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-semibold text-gray-700 mb-2">How did you hear about us?</label>
-                                                        <select name="referralSource" value={formData.referralSource} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600">
+                                                        <select name="referralSource" value={formData.referralSource} onChange={handleChange} className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600 transition-all">
                                                             <option value="">Select option...</option>
                                                             <option value="Google">Google Search</option>
                                                             <option value="Social">Social Media</option>
@@ -374,6 +366,20 @@ function HomeContent() {
                                                             <option value="Other">Other</option>
                                                         </select>
                                                     </div>
+                                                    {formData.referralSource === 'Other' && (
+                                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Please specify *</label>
+                                                            <input 
+                                                                type="text" 
+                                                                name="referralDetail" 
+                                                                placeholder="Tell us more..." 
+                                                                value={formData.referralDetail} 
+                                                                onChange={handleChange} 
+                                                                className="w-full px-5 py-4 text-lg bg-gray-50 border-2 border-cyan-600 rounded-xl text-gray-900 focus:outline-none transition-all" 
+                                                                autoFocus
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 space-y-3">
                                                         <label className="flex items-start gap-3 cursor-pointer">
                                                             <input type="checkbox" name="tosAccepted" checked={formData.tosAccepted} onChange={handleChange} className="mt-1 w-5 h-5 text-cyan-600 rounded" />
@@ -391,7 +397,17 @@ function HomeContent() {
                                                 </div>
                                             </StepContainer>
                                         </form>
+
+                                        <div className="mt-8 space-y-3 pt-6 border-t border-gray-100">
+                                            <a
+                                                href="/requester/login"
+                                                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-bold rounded-xl transition-all border border-gray-200 hover:border-cyan-400 text-center"
+                                            >
+                                                Already have an account? Log In
+                                            </a>
+                                        </div>
                                     </div>
+                                </>
                                 </div>
                             ) : (
                                 /* Success State */

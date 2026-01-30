@@ -21,6 +21,7 @@ export default function ContractorJoinPage() {
         tradeType: '',
         otherLicenseDescription: '',
         referralSource: '',
+        referralDetail: '',
         insuranceCertified: false,
         tosAccepted: false
     });
@@ -85,6 +86,9 @@ export default function ContractorJoinPage() {
             if (formData.password.length < 8) errors.password = 'Password must be at least 8 characters';
             if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Passwords do not match';
             if (!formData.referralSource) errors.referralSource = 'Please select a referral source';
+            if (formData.referralSource === 'Other' && !formData.referralDetail.trim()) {
+                errors.referralDetail = 'Please specify how you heard about us';
+            }
             if (!formData.tosAccepted) errors.tosAccepted = 'You must accept the Terms of Service';
         }
 
@@ -137,7 +141,7 @@ export default function ContractorJoinPage() {
                     data: {
                         full_name: formData.name,
                         trade_type: formData.tradeType,
-                        referral_source: formData.referralSource
+                        referral_source: formData.referralSource === 'Other' ? formData.referralDetail : formData.referralSource
                     }
                 }
             });
@@ -416,6 +420,21 @@ export default function ContractorJoinPage() {
                                     </select>
                                     {fieldErrors.referralSource && <p className="text-red-600 text-sm mt-1">{fieldErrors.referralSource}</p>}
                                 </div>
+                                {formData.referralSource === 'Other' && (
+                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Please specify *</label>
+                                        <input 
+                                            type="text" 
+                                            name="referralDetail" 
+                                            placeholder="Tell us more..." 
+                                            value={formData.referralDetail} 
+                                            onChange={handleChange} 
+                                            className={`w-full px-5 py-4 text-lg bg-gray-50 border-2 rounded-xl text-gray-900 focus:outline-none focus:bg-white transition-all ${fieldErrors.referralDetail ? 'border-red-500 focus:border-red-600' : 'border-cyan-600'}`}
+                                            autoFocus
+                                        />
+                                        {fieldErrors.referralDetail && <p className="text-red-600 text-sm mt-1">{fieldErrors.referralDetail}</p>}
+                                    </div>
+                                )}
                                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
                                     <label className="flex items-start gap-4 cursor-pointer">
                                         <input

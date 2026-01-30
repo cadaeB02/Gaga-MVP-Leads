@@ -133,7 +133,7 @@ export default function ContractorPortal() {
         );
     }
     return (
-        <div className="space-y-8">
+        <div className="w-full max-w-2xl mx-auto space-y-8">
             {/* Hero Section */}
             <div className="text-center space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
@@ -157,7 +157,7 @@ export default function ContractorPortal() {
                     </a>
                     <a
                         href="/login"
-                        className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-semibold rounded-xl transition-all border border-gray-200 hover:border-cyan-400 text-center"
+                        className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 text-base font-bold rounded-xl transition-all border border-gray-200 hover:border-cyan-400 text-center"
                     >
                         Already have an account? Log In
                     </a>
